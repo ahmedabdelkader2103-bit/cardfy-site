@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cardfy</title>
+<script>
+/* ============================================================
+   Cardfy — صفحة العميل العامة (Public Client Page)
+   بتقرأ كود العميل من الرابط وتجيب بياناته لحظيًا من Supabase.
+   الملف ده لازم يترفع باسم index.html في جذر الاستضافة.
+   لازم يترفع معاه ملف 404.html (نفس المجلد) عشان الروابط الجميلة
+   زي cardfy.space/qbl-0001 تشتغل صح على GitHub Pages.
+   ============================================================ */
+
+// استعادة المسار الأصلي لو جاي من خدعة الـ404 الخاصة بـ GitHub Pages
+(function(){
+  try{
+    var p = new URLSearchParams(location.search).get('p');
+    if(p){
+      window.history.replaceState(null, '', p + location.hash);
+    }
+  }catch(e){ console.warn('تعذر استعادة المسار', e); }
+})();
+
+const SUPA_URL = 'https://ytixcczbjmjnuotzavbb.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0aXhjY3piam1qbnVvdHphdmJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzMDUzNjEsImV4cCI6MjEwMzg4MTM2MX0.ppp6d7_gzdr9qYoMfrclx4XdWNs4E1PhTW9dzGyjbNQ';
+const DOMAIN = 'https://cardfy.space';
+const SUPPORT = { whatsapp: '201000000000', brand: 'Cardfy', domain: 'cardfy.space' };
+const BG_SOLIDS={cream:'#FFF6EC',light:'#F7F8FC',dark:'#0B0D14',sand:'#EFE3D2',mint:'#E7F6F1',navy:'#101A32'};
+const DARK_BGS=['dark','navy'];
+const FONTS=[
+  {v:'tajawal',l:'Tajawal',css:"'Tajawal',sans-serif"},
+  {v:'cairo',l:'Cairo',css:"'Cairo',sans-serif"},
+  {v:'almarai',l:'Almarai',css:"'Almarai',sans-serif"},
+  {v:'readex',l:'Readex Pro',css:"'Readex Pro',sans-serif"},
+  {v:'messiri',l:'El Messiri',css:"'El Messiri',serif"},
+  {v:'amiri',l:'Amiri',css:"'Amiri',serif"},
+  {v:'aref',l:'Aref Ruqaa',css:"'Aref Ruqaa',serif"},
+  {v:'inter',l:'Inter',css:"'Inter',sans-serif"},
+  {v:'montserrat',l:'Montserrat',css:"'Montserrat',sans-serif"},
+  {v:'playfair',l:'Playfair Display',css:"'Playfair Display',serif"}
+];
+function fontCss(v){ const f=FONTS.find(f=>f.v===v); return f?f.css:"'Tajawal',sans-serif"; }
+const FULL_WIDTH_TILES=['vodafone','map','menu','gallery'];
+function defaultTileStyle(key){ return FULL_WIDTH_TILES.includes(key) ? 'wide' : 'square'; }
+const TILE_ICONS={whatsapp:'💬',instagram:'📸',facebook:'ƒ',tiktok:'🎵',instapay:'💳',vodafone:'📱',map:'📍',website:'🌐',menu:'🍽️',gallery:'🖼️',custom:'🔗'};
+function normUrl(val){ if(!val) return '#'; if(/^https?:/.test(val)) return val; if(/^(wa\.me|t\.me|telegram\.me)/.test(val)) return 'https://'+val; return 'https://'+val.replace(/^\/+/,''); }
+function shade(hex,percent){
+  try{
+    const n=hex.replace('#',''); const num=parseInt(n,16);
+    let r=(num>>16)+Math.round(255*percent), g=((num>>8)&0x00ff)+Math.round(255*percent), b=(num&0x0000ff)+Math.round(255*percent);
+    r=Math.max(Math.min(255,r),0); g=Math.max(Math.min(255,g),0); b=Math.max(Math.min(255,b),0);
+    return `#${(1<<24|r<<16|g<<8|b).toString(16).slice(1)}`;
+  }catch(e){ return hex; }
+}
+const today = new Date(); today.setHours(0,0,0,0);
+const DAY = 86400000;
+function d(s){return new Date(s+'T00:00:00')}
+function statusOf(c){ if(c.active===false) return 'inactive'; const e=d(c.end); if(e<today) return 'expired'; if(e-today<=7*DAY) return 'soon'; return 'active'; }
+
+function cfyFromRow(r){
+  return {
+    code:r.code, nameAr:r.name_ar, nameEn:r.name_en, type:r.brand_type, phone:r.phone,
+    tier:r.tier, active:r.active, start:r.sub_start, end:r.sub_end, tag:r.tag,
+    fb:r.facebook, ig:r.instagram, tt:r.tiktok, wa:r.whatsapp, insta:r.instapay, voda:r.vodafone_cash,
+    map:r.map_link, website:r.website, notes:r.notes, menuCats:r.menu_cats||[], menuItems:r.menu_items||[],
+    gallery:r.gallery||[], design:r.design||{}, card:r.card||{}
+  };
+}
+
+function buildExpiredHTML(c){
+  const waMsg=`مرحبًا Cardfy، أرغب في تجديد اشتراك صفحة ${c.nameAr}.`;
+  const waHref='https://wa.me/'+SUPPORT.whatsapp+'?text='+encodeURIComponent(waMsg);
+  return `<div style="background:#12131c;color:#fff;font-family:'Tajawal',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center">
+<div style="width:74px;height:74px;border-radius:50%;background:#241a22;color:#ff5c7a;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:22px">⏳</div>
+<h1 style="font-size:20px;margin-bottom:10px">انتهى اشتراك هذه الصفحة</h1>
+<p style="color:#9aa0b4;font-size:14px;max-width:320px;line-height:1.8;margin-bottom:26px">صفحة <b style="color:#fff">${c.nameAr||''}</b> على Cardfy مش متاحة حاليًا لحد ما يتم تجديد الاشتراك. لتجديد الاشتراك والتواصل معنا:</p>
+<a href="${waHref}" target="_blank" rel="noopener" style="background:#25d366;color:#fff;text-decoration:none;font-weight:800;padding:13px 30px;border-radius:14px;font-size:14.5px;display:inline-flex;align-items:center;gap:8px">💬 تجديد الاشتراك عبر واتساب</a>
+<div style="margin-top:34px;font-size:11px;color:#565c73">powered by <b>cardfy.space</b></div>
+</div>`;
+}
+
+function buildNotFoundHTML(){
+  return `<div style="background:#12131c;color:#fff;font-family:'Tajawal',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center">
+<div style="width:74px;height:74px;border-radius:50%;background:#1c2030;color:#8890b0;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:22px">🔍</div>
+<h1 style="font-size:20px;margin-bottom:10px">الصفحة دي مش موجودة</h1>
+<p style="color:#9aa0b4;font-size:14px;max-width:320px;line-height:1.8">تأكد من الرابط أو كود العميل. لو الكود صح وبرضو مش شغال، كلمنا على واتساب.</p>
+<div style="margin-top:34px;font-size:11px;color:#565c73">powered by <b>cardfy.space</b></div>
+</div>`;
+}
+
+function buildClientBody(c,d,opts){
+  const isExpired = !(opts&&opts.preview) && statusOf(c)==='expired';
+  if(isExpired) return {body: buildExpiredHTML(c), style:''};
+  const cols=d.columns||2;
+  const galMode=d.galMode||'grid3';
+  const tiles=(d.tiles||[]).filter(t=>t.on).map(t=>{
+    const icon=TILE_ICONS[t.key]||'🔗';
+    const style=t.style||defaultTileStyle(t.key);
+    const g=`background:linear-gradient(145deg, ${t.color}, ${shade(t.color,-0.18)})`;
+    if(t.key==='menu'){
+      const cats=(c.menuCats||[]).filter(cat=>cat.on!==false);
+      const itemsOf=cid=>(c.menuItems||[]).filter(it=>it.catId===cid && it.on!==false);
+      const body = cats.length ? cats.map(cat=>{
+        const its=itemsOf(cat.id);
+        const rows = its.length ? its.map(it=>`
+          <div class="c-mi">
+            ${it.image?`<img src="${it.image}">`:''}
+            <div class="c-mi-txt"><div class="c-mi-name">${it.name||''}</div>${it.desc?`<div class="c-mi-desc">${it.desc}</div>`:''}</div>
+            <div class="c-mi-price">${it.price||''}</div>
+          </div>`).join('') : `<div class="c-menu-row" style="opacity:.55">لسه مفيش أصناف</div>`;
+        return `<div class="c-mcat"><div class="c-mcat-name">${cat.name}</div>${rows}</div>`;
+      }).join('') : `<div class="c-menu-row" style="opacity:.6">لسه مفيش أصناف مضافة</div>`;
+      return `<details class="c-block"><summary style="${g}"><span class="c-block-ic">${icon}</span>${t.label||'قائمة الأسعار'}</summary><div class="c-block-body">${body}</div></details>`;
+    }
+    if(t.key==='gallery'){
+      const imgs=(c.gallery||[]);
+      const grid=imgs.length? `<div class="c-gal-grid mode-${galMode}">${imgs.map((g,gi)=>`<div class="c-gal-item" onclick="cLightbox(${gi})"><img src="${g.src||g}">${g.caption?`<span>${g.caption}</span>`:''}</div>`).join('')}</div>`
+        : `<div class="c-menu-row" style="opacity:.6">لسه مفيش صور مضافة</div>`;
+      return `<details class="c-block"><summary style="${g}"><span class="c-block-ic">${icon}</span>${t.label||'معرض الصور'}</summary><div class="c-block-body">${grid}</div></details>`;
+    }
+    let href='#';
+    if(t.key==='whatsapp') href='https://wa.me/'+(c.phone||'').replace(/\D/g,'');
+    else if(t.key==='instagram') href=normUrl(c.ig);
+    else if(t.key==='facebook') href=normUrl(c.fb);
+    else if(t.key==='tiktok') href=normUrl(c.tt);
+    else if(t.key==='map') href=normUrl(c.map);
+    else if(t.key==='website') href=normUrl(c.website);
+    else if(t.key==='custom') href=normUrl(t.value||'');
+    return `<a class="c-tile style-${style}" href="${href}" target="_blank" rel="noopener" style="${g}"><span class="c-tile-ic">${icon}</span>${style==='icon'?'':`<span>${t.label||''}</span>`}</a>`;
+  }).join('');
+  const isImgBg = d.bg==='image' && d.wallpaper;
+  const isDark = DARK_BGS.includes(d.bg) || isImgBg;
+  const bg = d.bg==='solid'?`background:${d.bg1}`
+    : d.bg==='gradient'?`background:linear-gradient(135deg,${d.bg1},${d.bg2})`
+    : isImgBg?`background-image:linear-gradient(rgba(6,8,16,${(d.overlay==null?30:d.overlay)/100}),rgba(6,8,16,${(d.overlay==null?30:d.overlay)/100})),url('${d.wallpaper}');background-size:cover;background-position:center;background-attachment:scroll`
+    : `background:${BG_SOLIDS[d.bg]||'#FFF6EC'}`;
+  const text=isDark?'#fff':'#2B1B22', sub=isDark?'rgba(255,255,255,.72)':'rgba(0,0,0,.55)';
+  const fs=Number(d.fontSize)||16;
+  const rad=fs<15?'16px':fs>18?'24px':'20px';
+  const decor = (d.decor!==false && !isImgBg) ? `background-image:radial-gradient(circle at 10% 6%, #ffffff88, transparent 40%), radial-gradient(circle at 92% 12%, #1FB6A855, transparent 42%), radial-gradient(circle at 88% 92%, #A6538C40, transparent 40%);` : '';
+  const nameFont = fontCss(d.nameFont), bodyFont = fontCss(d.bodyFont);
+  const logoHtml = d.logo
+    ? `<img class="c-logo" src="${d.logo}" onerror="this.style.display='none'">`
+    : `<div class="c-logo-fb">${d.logoTxt||(c.nameAr||'C').slice(0,2)}</div>`;
+
+  const style = `
+*{box-sizing:border-box;margin:0;padding:0}
+body{${bg};${decor};color:${text};font-family:${bodyFont};font-size:${fs}px;min-height:100vh;padding:28px 18px 22px;display:flex;flex-direction:column;align-items:center}
+.c-logo,.c-logo-fb{width:88px;height:88px;border-radius:26px;object-fit:cover;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;border:3px solid rgba(255,255,255,.7);box-shadow:0 6px 24px rgba(0,0,0,.12);overflow:hidden;font-weight:800;font-size:30px;background:#fff}
+.c-logo-fb{color:${isDark?'#6d4df6':(d.bg2||'#6d4df6')}}
+.c-names{text-align:center;margin-bottom:4px}
+.c-names .ar{font-family:${nameFont};font-weight:800;font-size:${fs*1.7}px}
+.c-names .en{font-weight:600;font-size:${fs*0.85}px;color:${sub};direction:ltr;margin-top:1px}
+.c-tag{font-size:${fs*0.78}px;text-align:center;color:${sub};margin:6px 8px 22px;max-width:300px}
+.c-tiles{width:100%;max-width:${cols===1?'340':cols===3?'440':'380'}px;display:grid;grid-template-columns:repeat(${cols},1fr);gap:10px}
+.c-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px 10px;color:#fff;font-weight:800;border-radius:${rad};text-decoration:none;font-size:${fs*0.85}px;box-shadow:0 6px 16px rgba(0,0,0,.14);aspect-ratio:1/1}
+.c-tile.style-wide{grid-column:span ${cols};flex-direction:row;aspect-ratio:auto;padding:14px 18px;justify-content:flex-start}
+.c-tile.style-compact{flex-direction:row;aspect-ratio:auto;padding:10px 12px;justify-content:flex-start;gap:8px}
+.c-tile.style-icon{aspect-ratio:1/1;padding:10px;gap:0}
+.c-tile.style-icon .c-tile-ic{width:44%;height:44%}
+.c-tile-ic{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.c-block{grid-column:span ${cols};border-radius:${rad};overflow:hidden;box-shadow:0 6px 16px rgba(0,0,0,.14)}
+.c-block summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:14px 18px;color:#fff;font-weight:800;font-size:${fs*0.85}px}
+.c-block summary::-webkit-details-marker{display:none}
+.c-block-ic{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;font-size:16px}
+.c-block-body{background:#fff;padding:12px 16px}
+.c-menu-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:${fs*0.85}px}
+.c-menu-row:last-child{border-bottom:0}
+.c-mcat{margin-bottom:10px}
+.c-mcat:last-child{margin-bottom:0}
+.c-mcat-name{font-weight:800;font-size:${fs*0.82}px;color:#a56b2b;margin-bottom:5px;padding-bottom:4px;border-bottom:2px solid #f4e4d4}
+.c-mi{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid #f5f5f5}
+.c-mi:last-child{border-bottom:0}
+.c-mi img{width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0}
+.c-mi-txt{flex:1;min-width:0}
+.c-mi-name{font-weight:700;font-size:${fs*0.82}px}
+.c-mi-desc{font-size:${fs*0.68}px;color:#888;margin-top:1px}
+.c-mi-price{font-weight:800;font-size:${fs*0.8}px;color:#b8722e;white-space:nowrap}
+.c-gal-grid{display:grid;grid-template-columns:repeat(${galMode==='grid2'?2:3},1fr);gap:6px}
+.c-gal-grid.mode-masonry{display:block;column-count:2;column-gap:6px}
+.c-gal-grid.mode-masonry .c-gal-item{break-inside:avoid;margin-bottom:6px}
+.c-gal-grid.mode-masonry .c-gal-item img{aspect-ratio:auto}
+.c-gal-grid.mode-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:8px;grid-template-columns:none}
+.c-gal-grid.mode-carousel .c-gal-item{flex:0 0 78%;scroll-snap-align:center}
+.c-gal-item{position:relative;cursor:pointer;border-radius:8px;overflow:hidden}
+.c-gal-item img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
+.c-gal-item span{position:absolute;bottom:0;right:0;left:0;background:linear-gradient(0deg,rgba(0,0,0,.65),transparent);color:#fff;font-size:9.5px;padding:10px 6px 4px;text-align:center}
+.c-lightbox{display:none;position:fixed;inset:0;background:rgba(10,10,15,.92);z-index:999;align-items:center;justify-content:center;flex-direction:column;padding:20px}
+.c-lightbox.show{display:flex}
+.c-lightbox img{max-width:92vw;max-height:74vh;border-radius:10px;object-fit:contain}
+.c-lightbox .cap{color:#fff;font-size:13px;margin-top:12px;text-align:center;max-width:90vw}
+.c-lightbox .nav{position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;border:0;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.c-lightbox .prev{right:14px}
+.c-lightbox .next{left:14px}
+.c-lightbox .close{position:absolute;top:16px;left:16px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;border:0;font-size:18px;cursor:pointer}
+.c-foot{font-size:10px;color:${sub};text-align:center;margin-top:20px;padding-top:10px}
+`;
+  const body = `${logoHtml}
+<div class="c-names"><div class="ar">${c.nameAr||''}</div>${c.nameEn?`<div class="en">${c.nameEn}</div>`:''}</div>
+${c.tag?`<div class="c-tag">${c.tag}</div>`:''}
+<div class="c-tiles" onclick="cTrack(event)">${tiles}</div>
+<div class="c-foot">powered by <b>cardfy.space</b></div>
+<div class="c-lightbox" id="cLb">
+  <button class="close" onclick="cLbClose()">✕</button>
+  <button class="nav prev" onclick="cLbNav(-1)">›</button>
+  <img id="cLbImg" src="">
+  <div class="cap" id="cLbCap"></div>
+  <button class="nav next" onclick="cLbNav(1)">‹</button>
+</div>`;
+  window.cGalImgs = (c.gallery||[]).map(g=>({src:g.src||g,caption:g.caption||''}));
+  return {body, style};
+}
+
+const CFY_SRC = new URLSearchParams(location.search).get('src') || 'direct';
+function cfyTrack(event, data){
+  const payload = Object.assign({ event, src: CFY_SRC, code: window.CFY_CODE||'', ts: Date.now() }, data||{});
+  try{ (window.CFY_EVENTS=window.CFY_EVENTS||[]).push(payload); }catch(e){}
+  try{ if(window.parent!==window) window.parent.postMessage({cardfy:payload},'*'); }catch(e){}
+}
+function cTrack(ev){
+  const el=ev.target.closest('a.c-tile, details.c-block>summary');
+  if(!el) return;
+  cfyTrack('tile_click', {label:(el.textContent||'').trim()});
+}
+let cLbIdx=0;
+function cLightbox(i){ cLbIdx=i; cLbShow(); document.getElementById('cLb').classList.add('show'); }
+function cLbShow(){ const g=window.cGalImgs[cLbIdx]; document.getElementById('cLbImg').src=g.src; document.getElementById('cLbCap').textContent=g.caption||''; }
+function cLbNav(dir){ cLbIdx=(cLbIdx+dir+window.cGalImgs.length)%window.cGalImgs.length; cLbShow(); }
+function cLbClose(){ document.getElementById('cLb').classList.remove('show'); }
+
+async function boot(){
+  const parts = location.pathname.split('/').filter(Boolean);
+  const code = (parts[parts.length-1] || '').toLowerCase();
+  const app = document.getElementById('app');
+
+  if(!code){
+    app.innerHTML = `<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:sans-serif;color:#888">Cardfy — QR Business Link</div>`;
+    return;
+  }
+
+  if(!window.supabase){
+    app.innerHTML = `<div style="min-height:100vh;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;font-family:'Tajawal',sans-serif;color:#888;text-align:center;padding:20px">
+      <div>تعذر الاتصال بالخادم، تأكد من اتصالك بالإنترنت وأعد المحاولة</div>
+      <button onclick="location.reload()" style="padding:10px 22px;border-radius:10px;border:0;background:#6d4df6;color:#fff;font-weight:700;cursor:pointer">إعادة المحاولة</button>
+    </div>`;
+    return;
+  }
+
+  const sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+  const {data, error} = await sb.from('clients').select('*').eq('code', code.toUpperCase()).maybeSingle();
+
+  if(error || !data){
+    document.getElementById('style-tag').textContent = "body{font-family:'Tajawal',sans-serif}";
+    app.innerHTML = buildNotFoundHTML();
+    return;
+  }
+
+  window.CFY_CODE = data.code;
+  const c = cfyFromRow(data);
+  const design = c.design && Object.keys(c.design).length ? c.design : {tiles:[]};
+  const {body, style} = buildClientBody(c, design);
+  document.getElementById('style-tag').textContent = style;
+  app.innerHTML = body;
+
+  const isExpired = statusOf(c)==='expired';
+  if(!isExpired){
+    cfyTrack('page_view');
+    if(CFY_SRC==='qr') cfyTrack('qr_visit');
+  }
+}
+</script>
+<style id="style-tag"></style>
+</head>
+<body>
+<div id="app" style="min-height:100vh"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>boot();</script>
+</body>
+</html>

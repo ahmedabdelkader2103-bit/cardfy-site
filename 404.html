@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Cardfy</title>
+<script>
+  /* بما إن cardfy.space دومين مخصص (مش github.io/repo)، المسار مباشر من الجذر.
+     نحوّل /qbl-0001 → /?p=/qbl-0001 وindex.html هترجّعه تاني. */
+  var l = window.location;
+  l.replace(l.protocol + '//' + l.host + '/?p=' + encodeURIComponent(l.pathname + l.search) + l.hash);
+</script>
+</head>
+<body></body>
+</html>
