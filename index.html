@@ -115,10 +115,23 @@ function buildClientBody(c,d,opts){
       return `<details class="c-block"><summary style="${g}"><span class="c-block-ic">${icon}</span>${t.label||'قائمة الأسعار'}</summary><div class="c-block-body">${body}</div></details>`;
     }
     if(t.key==='gallery'){
-      const imgs=(c.gallery||[]);
-      const grid=imgs.length? `<div class="c-gal-grid mode-${galMode}">${imgs.map((g,gi)=>`<div class="c-gal-item" onclick="cLightbox(${gi})"><img src="${g.src||g}">${g.caption?`<span>${g.caption}</span>`:''}</div>`).join('')}</div>`
-        : `<div class="c-menu-row" style="opacity:.6">لسه مفيش صور مضافة</div>`;
-      return `<details class="c-block"><summary style="${g}"><span class="c-block-ic">${icon}</span>${t.label||'معرض الصور'}</summary><div class="c-block-body">${grid}</div></details>`;
+      const style=t.style||defaultTileStyle(t.key);
+      const count=(c.gallery||[]).length;
+      return `<button type="button" class="c-tile style-${style}" style="${g};border:0;cursor:pointer;font-family:inherit" onclick="cOpenGallery()"><span class="c-tile-ic">${icon}</span>${style==='icon'?'':`<span>${t.label||'معرض الصور'}${count?` (${count})`:''}</span>`}</button>`;
+    }
+    if(t.key==='vodafone'){
+      const num=(c.voda||'').trim();
+      const style=t.style||defaultTileStyle(t.key);
+      return `<button type="button" class="c-tile style-${style}" style="${g};border:0;cursor:pointer;font-family:inherit" onclick="cCopyText(this,'${num.replace(/'/g,"\\'")}')"><span class="c-tile-ic">${icon}</span>${style==='icon'?'':`<span>${t.label||''}</span>`}</button>`;
+    }
+    if(t.key==='instapay'){
+      const val=(c.insta||'').trim();
+      const looksLikeLink = /^https?:\/\//i.test(val) || val.includes('.');
+      const style=t.style||defaultTileStyle(t.key);
+      if(looksLikeLink){
+        return `<a class="c-tile style-${style}" href="${normUrl(val)}" target="_blank" rel="noopener" style="${g}"><span class="c-tile-ic">${icon}</span>${style==='icon'?'':`<span>${t.label||''}</span>`}</a>`;
+      }
+      return `<button type="button" class="c-tile style-${style}" style="${g};border:0;cursor:pointer;font-family:inherit" onclick="cCopyText(this,'${val.replace(/'/g,"\\'")}')"><span class="c-tile-ic">${icon}</span>${style==='icon'?'':`<span>${t.label||''}</span>`}</button>`;
     }
     let href='#';
     if(t.key==='whatsapp') href='https://wa.me/'+(c.phone||'').replace(/\D/g,'');
@@ -195,6 +208,11 @@ body{${bg};${decor};color:${text};font-family:${bodyFont};font-size:${fs}px;min-
 .c-lightbox .prev{right:14px}
 .c-lightbox .next{left:14px}
 .c-lightbox .close{position:absolute;top:16px;left:16px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;border:0;font-size:18px;cursor:pointer}
+.c-galpage{display:none;position:fixed;inset:0;background:${isDark?'#0b0d14':'#fff'};z-index:998;flex-direction:column}
+.c-galpage.show{display:flex}
+.c-galpage-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid ${isDark?'rgba(255,255,255,.1)':'#eee'};font-weight:800;color:${text};font-size:${fs}px}
+.c-galpage-back{background:none;border:0;color:${text};font-weight:700;font-size:${fs*0.85}px;cursor:pointer}
+.c-galpage-grid{flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(${galMode==='grid2'?2:3},1fr);gap:6px;padding:10px}
 .c-foot{font-size:10px;color:${sub};text-align:center;margin-top:20px;padding-top:10px}
 `;
   const body = `${logoHtml}
@@ -208,6 +226,14 @@ ${c.tag?`<div class="c-tag">${c.tag}</div>`:''}
   <img id="cLbImg" src="">
   <div class="cap" id="cLbCap"></div>
   <button class="nav next" onclick="cLbNav(1)">‹</button>
+</div>
+<div class="c-galpage" id="cGalPage">
+  <div class="c-galpage-head">
+    <button class="c-galpage-back" onclick="cCloseGallery()">→ رجوع</button>
+    <span>معرض الصور</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="c-galpage-grid" id="cGalPageGrid"></div>
 </div>`;
   window.cGalImgs = (c.gallery||[]).map(g=>({src:g.src||g,caption:g.caption||''}));
   return {body, style};
@@ -218,9 +244,17 @@ function cfyTrack(event, data){
   const payload = Object.assign({ event, src: CFY_SRC, code: window.CFY_CODE||'', ts: Date.now() }, data||{});
   try{ (window.CFY_EVENTS=window.CFY_EVENTS||[]).push(payload); }catch(e){}
   try{ if(window.parent!==window) window.parent.postMessage({cardfy:payload},'*'); }catch(e){}
+  try{
+    fetch(SUPA_URL+'/rest/v1/cfy_events', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY},
+      body: JSON.stringify({code:payload.code, event:payload.event, src:payload.src, label:payload.label||null}),
+      keepalive:true
+    }).catch(()=>{});
+  }catch(e){}
 }
 function cTrack(ev){
-  const el=ev.target.closest('a.c-tile, details.c-block>summary');
+  const el=ev.target.closest('a.c-tile, button.c-tile, details.c-block>summary');
   if(!el) return;
   cfyTrack('tile_click', {label:(el.textContent||'').trim()});
 }
@@ -229,6 +263,39 @@ function cLightbox(i){ cLbIdx=i; cLbShow(); document.getElementById('cLb').class
 function cLbShow(){ const g=window.cGalImgs[cLbIdx]; document.getElementById('cLbImg').src=g.src; document.getElementById('cLbCap').textContent=g.caption||''; }
 function cLbNav(dir){ cLbIdx=(cLbIdx+dir+window.cGalImgs.length)%window.cGalImgs.length; cLbShow(); }
 function cLbClose(){ document.getElementById('cLb').classList.remove('show'); }
+
+function cOpenGallery(){
+  const host=document.getElementById('cGalPageGrid');
+  host.innerHTML = window.cGalImgs.length
+    ? window.cGalImgs.map((g,gi)=>`<div class="c-gal-item" onclick="cLightbox(${gi})"><img src="${g.src}">${g.caption?`<span>${g.caption}</span>`:''}</div>`).join('')
+    : '<div style="grid-column:1/-1;text-align:center;color:#888;padding:30px 0">لسه مفيش صور مضافة</div>';
+  document.getElementById('cGalPage').classList.add('show');
+  cfyTrack('gallery_open');
+  document.body.style.overflow='hidden';
+}
+function cCloseGallery(){
+  document.getElementById('cGalPage').classList.remove('show');
+  document.body.style.overflow='';
+}
+function cCopyText(btn, text){
+  if(!text) return;
+  const done = ()=>{
+    cfyTrack('payment_click', {label:(btn.textContent||'').trim()});
+    const old = btn.innerHTML;
+    btn.innerHTML = '<span class="c-tile-ic">✅</span><span>تم النسخ</span>';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.innerHTML = old; btn.classList.remove('copied'); }, 1800);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(()=>{ cCopyFallback(text); done(); });
+  } else { cCopyFallback(text); done(); }
+}
+function cCopyFallback(text){
+  try{
+    const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+  }catch(e){}
+}
 
 async function boot(){
   const parts = location.pathname.split('/').filter(Boolean);
