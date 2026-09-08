@@ -164,8 +164,13 @@ function renderPreviewCatalog(){
   const cats=(state.snapshot.categories||[]).filter(x=>x.enabled!==false).slice(0,4);
   const products=(state.snapshot.products||[]).filter(x=>x.enabled!==false).slice(0,4);
   qs('#previewCats').innerHTML=(cats.length?cats:[{name_ar:'الأكثر طلبًا'},{name_ar:'برجر'},{name_ar:'مشروبات'}]).map((x,i)=>`<span class="cat ${i===0?'on':''}">${safe(x.name_ar||x.name||'قسم')}</span>`).join('');
-  qs('#previewProducts').innerHTML=(products.length?products:[{name_ar:'مثال منتج',base_price:120},{name_ar:'مثال منتج',base_price:85},{name_ar:'مثال منتج',base_price:150},{name_ar:'مثال منتج',base_price:65}]).map(x=>`<div class="product-card"><div class="product-img" ${x.image_url?`style="background-image:url('${safe(x.image_url)}');background-size:cover;background-position:center"`:''}></div><div class="product-info"><b>${safe(x.name_ar||'منتج')}</b><span>${safe(x.base_price??'')} ${safe(state.settings.currency||'EGP')}</span></div></div>`).join('');
-  qs('#previewNote').textContent=products.length?'المعاينة تستخدم بيانات المنيو الحالية.':'معاينة شكلية حتى إضافة الأقسام والمنتجات في Phase 2.';
+  qs('#previewProducts').innerHTML=(products.length?products:[{name_ar:'مثال منتج',base_price:120},{name_ar:'مثال منتج',base_price:85},{name_ar:'مثال منتج',base_price:150},{name_ar:'مثال منتج',base_price:65}]).map(x=>`<div class="product-card" style="${x.available===false?'opacity:.55;':''}"><div class="product-img" ${x.image_url?`style="background-image:url('${safe(x.image_url)}');background-size:cover;background-position:center"`:''}></div><div class="product-info"><b>${x.featured?'★ ':''}${safe(x.name_ar||'منتج')}</b><span>${safe(x.base_price??'')} ${safe(state.settings.currency||'EGP')}${x.available===false?' · غير متاح':''}</span></div></div>`).join('');
+  qs('#previewNote').textContent=products.length?'المعاينة تستخدم الأقسام والمنتجات المحفوظة فعليًا.':'أضف أقسامًا ومنتجات من تبويب الأقسام والمنتجات.';
 }
 
+function loadPhase2(){
+  const css=document.createElement('link');css.rel='stylesheet';css.href='/dashboard/menu/catalog.css';document.head.appendChild(css);
+  const cat=document.createElement('script');cat.src='/dashboard/menu/catalog.js';cat.onload=()=>{const init=document.createElement('script');init.src='/dashboard/menu/phase2-init.js';document.body.appendChild(init)};document.body.appendChild(cat);
+}
+loadPhase2();
 boot();
