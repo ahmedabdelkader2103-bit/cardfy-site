@@ -7,7 +7,7 @@ const state={token:'',session:null,snapshot:null,settings:{},saving:false};
 const qs=(s,r=document)=>r.querySelector(s);
 const qsa=(s,r=document)=>[...r.querySelectorAll(s)];
 
-function safe(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]))}
+function safe(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(msg){const el=qs('#toast');el.textContent=msg;el.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('on'),2400)}
 function setStatus(id,msg,type=''){const el=qs(id);if(!el)return;el.textContent=msg||'';el.className='status'+(type?' '+type:'')}
 function objectHasData(o){return o&&typeof o==='object'&&!Array.isArray(o)&&Object.keys(o).length>0}
