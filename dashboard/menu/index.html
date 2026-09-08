@@ -1,1 +1,143 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cardfy — Professional Menu</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>body{margin:0;font-family:Tajawal,Arial,sans-serif;background:#f5f6fb;color:#20243a}.wrap{max-width:780px;margin:8vh auto;padding:24px}.card{background:#fff;border:1px solid #e7e9f2;border-radius:18px;padding:26px;box-shadow:0 10px 30px rgba(25,30,55,.06)}a{display:inline-block;margin-top:14px;text-decoration:none;background:#eef0ff;color:#5a45db;padding:10px 14px;border-radius:10px;font-weight:800}.muted{color:#7b8499;line-height:1.8}.ok{background:#e9f9f1;color:#137552;padding:10px 12px;border-radius:10px;font-weight:800}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:18px 0}.item{border:1px solid #e7e9f2;border-radius:12px;padding:12px}</style></head><body><div class="wrap"><div class="card"><h1>Professional Menu</h1><div id="status" class="muted">جاري التحقق من الخدمة...</div><div id="body" style="display:none"><p class="ok">Backend V1 جاهز ومربوط بحساب العميل.</p><div class="grid"><div class="item">التصنيفات والصور</div><div class="item">المنتجات والأسعار</div><div class="item">Variants & Add-ons</div><div class="item">الخصومات والكوبونات</div><div class="item">Delivery Zones</div><div class="item">الطلبات وحالاتها</div></div><p class="muted">واجهة إدارة المنيو الكاملة لم تُبنَ بعد؛ هذه الصفحة تؤكد أن البنية الخلفية الحقيقية موجودة ومتصلة بالحساب.</p><div class="muted" id="orders"></div></div><a href="/client-dashboard.html">رجوع للخدمات</a></div></div><script>const sb=window.supabase.createClient('https://ytixcczbjmjnuotzavbb.supabase.co','sb_publishable_0j9jf0boDrMGGO8S6mw-4Q_5bOeHIuU'),TK='cardfy_client_token_v1';(async()=>{const t=localStorage.getItem(TK);if(!t){location='/client-dashboard.html';return}const s=await sb.rpc('cfy_client_session',{p_token:t});if(s.error||!(s.data.services||[]).includes('menu')){location='/client-dashboard.html';return}document.getElementById('status').textContent=s.data.client.code+' · '+(s.data.client.brand_name_ar||'');document.getElementById('body').style.display='block';const r=await sb.rpc('cfy_menu_client_orders',{p_token:t,p_status:null});document.getElementById('orders').textContent=r.error?'تعذر قراءة الطلبات الآن':'عدد الطلبات الحالية: '+(r.data||[]).length})()</script></body></html>
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CARDfy — Professional Menu</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="/dashboard/menu/menu.css">
+</head>
+<body>
+<div id="appLoading" class="loading">جاري تحميل Professional Menu...</div>
+<div id="appContent" hidden>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">CARDfy<small>Professional Menu</small></div>
+      <div id="restaurantChip" class="restaurant-chip"></div>
+      <nav class="nav">
+        <button data-section="orders" data-message="Orders Dashboard سيتم تنفيذه في Phase 5"><span>الطلبات</span><span class="tag">Phase 5</span></button>
+        <button data-section="pos" data-message="POS سيتم تنفيذه في Phase 7"><span>POS</span><span class="tag">Phase 7</span></button>
+        <button data-section="tools" class="active"><span>Tools</span><span class="tag">نشط</span></button>
+        <button data-section="analytics" data-message="Analytics سيتم تنفيذها في Phase 8"><span>Analytics</span><span class="tag">Phase 8</span></button>
+        <button data-section="settings" data-message="Settings الموسعة سيتم تنفيذها في Phase 8"><span>الإعدادات</span><span class="tag">Phase 8</span></button>
+      </nav>
+      <div class="sidebar-foot"><a class="back" href="/client-dashboard.html">رجوع إلى خدماتي</a></div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h1 id="topTitle">Professional Menu</h1>
+          <div class="muted"><span id="clientCode"></span> · Tools Foundation</div>
+        </div>
+        <div class="top-actions">
+          <span id="adminBadge" class="badge admin" hidden></span>
+          <span class="badge">Phase 1</span>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <section>
+          <div class="card">
+            <div class="section-title">
+              <div><h2>Tools</h2><div class="muted">إدارة محتوى وشكل المنيو من مكان واحد.</div></div>
+            </div>
+            <div class="tools-tabs">
+              <button class="active" data-tab="profile">بيانات المطعم</button>
+              <button data-tab="appearance">شكل المنيو</button>
+              <button data-tab="catalog">الأقسام والمنتجات</button>
+              <button data-tab="addons">الإضافات</button>
+              <button data-tab="offers">العروض والكوبونات</button>
+              <button data-tab="delivery">التوصيل والطلبات</button>
+              <button data-tab="preview">QR & Preview</button>
+            </div>
+
+            <div class="panel active" data-panel="profile">
+              <div class="form-grid">
+                <div class="field"><label>اسم المطعم في المنيو</label><input id="displayName" maxlength="120" placeholder="مثال: مطعم شاورما البلد"></div>
+                <div class="field"><label>رقم الهاتف</label><input id="restaurantPhone" dir="ltr" maxlength="40" placeholder="01xxxxxxxxx"></div>
+                <div class="field"><label>WhatsApp</label><input id="restaurantWhatsapp" dir="ltr" maxlength="40" placeholder="201xxxxxxxxx"></div>
+                <div class="field"><label>رابط Google Maps</label><input id="mapLink" dir="ltr" placeholder="https://maps.google.com/..."></div>
+                <div class="field full"><label>العنوان</label><input id="address" maxlength="500" placeholder="العنوان الذي سيظهر للعميل"></div>
+                <div class="field full"><label>وصف قصير</label><textarea id="description" maxlength="1000" placeholder="وصف مختصر للمطعم أو رسالته"></textarea></div>
+
+                <div class="field full"><label>Logo</label>
+                  <div class="upload-row"><div id="logoThumb" class="thumb">Logo</div><input id="logoUrl" type="hidden"><input id="logoInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"></div>
+                  <div id="logoStatus" class="status"></div>
+                </div>
+                <div class="field full"><label>Cover</label>
+                  <div class="upload-row"><div id="coverThumb" class="thumb cover">Cover</div><input id="coverUrl" type="hidden"><input id="coverInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"></div>
+                  <div id="coverStatus" class="status"></div>
+                </div>
+              </div>
+              <div class="save-row"><button id="saveProfile" class="btn">حفظ بيانات المطعم</button><div id="profileStatus" class="status"></div></div>
+            </div>
+
+            <div class="panel" data-panel="appearance">
+              <h3>الوضع</h3>
+              <div class="choice-grid">
+                <label class="choice"><input type="radio" name="themeMode" value="light"><strong>Light</strong><span>خلفية فاتحة وواضحة.</span></label>
+                <label class="choice"><input type="radio" name="themeMode" value="dark"><strong>Dark</strong><span>تجربة داكنة مناسبة لصور الطعام.</span></label>
+              </div>
+              <h3 style="margin-top:18px">Layout preset</h3>
+              <div class="choice-grid">
+                <label class="choice"><input type="radio" name="layoutPreset" value="classic"><strong>Classic</strong><span>متوازن وبسيط.</span></label>
+                <label class="choice"><input type="radio" name="layoutPreset" value="modern"><strong>Modern</strong><span>بطاقات أكثر نعومة ومساحات أوسع.</span></label>
+                <label class="choice"><input type="radio" name="layoutPreset" value="visual"><strong>Visual Food Focused</strong><span>مساحة أكبر لصور المنتجات.</span></label>
+              </div>
+              <div class="field" style="margin-top:18px"><label>Accent Color</label><div class="color-row"><input id="accentColor" type="color"><input id="accentText" dir="ltr" maxlength="7" placeholder="#ff6b1a"></div></div>
+              <div class="toggles">
+                <label class="toggle"><span>إظهار Cover</span><input id="showCover" type="checkbox"></label>
+                <label class="toggle"><span>إظهار الوصف</span><input id="showDescription" type="checkbox"></label>
+                <label class="toggle"><span>إظهار أزرار التواصل</span><input id="showContactButtons" type="checkbox"></label>
+              </div>
+              <div class="phase-note">هذه Presets محدودة من CARDfy وليست Design Editor مفتوحًا.</div>
+              <div class="save-row"><button id="saveAppearance" class="btn">حفظ شكل المنيو</button><div id="appearanceStatus" class="status"></div></div>
+            </div>
+
+            <div class="panel" data-panel="catalog"><div class="coming"><b>الأقسام والمنتجات — Phase 2</b><p>الهيكل ظاهر الآن للحفاظ على Information Architecture المعتمدة. CRUD الكامل، الصور، Duplicate، Variants وترتيب العناصر سيُنفذ في Phase 2.</p></div></div>
+            <div class="panel" data-panel="addons"><div class="coming"><b>الإضافات الديناميكية — Phase 2</b><p>Reusable option groups وMin/Max وSingle/Multi ستُنفذ في مرحلة Catalog Management.</p></div></div>
+            <div class="panel" data-panel="offers"><div class="coming"><b>العروض والكوبونات — Phase 4</b><p>الـBackend foundation موجود، لكن واجهة التسعير والعروض ستدخل مع Pricing + Offers + Cart.</p></div></div>
+            <div class="panel" data-panel="delivery"><div class="coming"><b>التوصيل والطلبات — Phases 4–5</b><p>Delivery Zones وScheduled Orders والـCheckout validation ستُستكمل قبل إطلاق الطلبات العامة.</p></div></div>
+
+            <div class="panel" data-panel="preview">
+              <div class="section-title"><div><h3>معاينة المنيو</h3><div class="muted">Preview Foundation — لا تغيّر الـPublic QR الحالي.</div></div><button id="refreshPreview" class="btn secondary">تحديث من المحفوظ</button></div>
+              <div class="preview-shell">
+                <div id="menuPreview" class="preview">
+                  <div id="previewCover" class="preview-cover"><div id="previewLogo" class="preview-logo">CF</div></div>
+                  <div class="preview-body">
+                    <div id="previewName" class="preview-name">اسم المطعم</div>
+                    <div id="previewDescription" class="preview-desc"></div>
+                    <div id="previewContacts" class="contact-row"></div>
+                    <div class="preview-search">ابحث في المنيو...</div>
+                    <div id="previewCats" class="cat-row"></div>
+                    <div id="previewProducts" class="product-grid"></div>
+                    <div id="previewNote" class="preview-note"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="phase-note">الـPublic Professional Menu الحقيقي سيتم تفعيله في Phase 3 بعد بناء Customer Menu، لذلك لا يوجد أي Traffic Switch أو تغيير للـQR في هذه المرحلة.</div>
+            </div>
+          </div>
+        </section>
+
+        <aside>
+          <div class="card">
+            <div class="section-title"><div><h3>Setup Checklist</h3><div class="muted">جاهزية المنيو قبل التشغيل</div></div><b id="setupPct">0%</b></div>
+            <div class="progress"><i id="setupBar" style="width:0"></i></div>
+            <div id="checklist" class="checklist"></div>
+          </div>
+          <div class="card" style="margin-top:16px">
+            <h3>حالة المرحلة</h3>
+            <p class="muted" style="font-size:12px;line-height:1.8">Phase 1 تبني Owner Dashboard + Tools Foundation فقط. الأقسام والمنتجات والطلبات العامة وPOS وAnalytics ليست مفعلة كوظائف نهائية في هذه المرحلة.</p>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+<script src="/dashboard/common/cardfy-assets.js"></script>
+<script src="/dashboard/menu/menu.js"></script>
+</body>
+</html>
