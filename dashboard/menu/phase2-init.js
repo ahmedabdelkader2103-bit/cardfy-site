@@ -1,6 +1,5 @@
 (function(){
 let started=false;
-try{safe=function(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}}catch(e){}
 async function reloadPhase2(){
   const {data:snap,error}=await sb.rpc('cfy_menu_manage_snapshot',{p_token:state.token});
   if(error)throw error;
