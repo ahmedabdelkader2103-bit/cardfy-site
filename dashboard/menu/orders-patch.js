@@ -1,6 +1,6 @@
 (function(){
 function install(){
-  if(typeof printJob!=='function'||typeof printOrder!=='function'||typeof ticketHtml!=='function'||typeof M==='undefined'||typeof ctx==='undefined'){setTimeout(install,80);return}
+  if(typeof printJob!=='function'||typeof printOrder!=='function'||typeof ticketHtml!=='function'||typeof tableAction!=='function'||typeof M==='undefined'||typeof ctx==='undefined'){setTimeout(install,80);return}
   if(window.__cardfyOrdersPatch)return;window.__cardfyOrdersPatch=true;
 
   const baseTicketHtml=ticketHtml;
@@ -26,6 +26,13 @@ function install(){
     const r=await M.sb.rpc('cfy_menu_mark_print_job',{p_token:ctx.key,p_job_id:j.id,p_status:ok?'printed':'failed',p_error:ok?'':(errorText||'popup_blocked')});
     if(r.error)M.toast('تمت محاولة الطباعة لكن تعذر تحديث حالتها.');
     await reload();
+  };
+
+  tableAction=async function(session,action){
+    if(action==='close_paid'&&!confirm('تأكيد الدفع وإغلاق حساب الترابيزة؟'))return;
+    const r=await M.sb.rpc('cfy_menu_owner_table_action',{p_token:ctx.key,p_session_id:session,p_action:action});
+    if(r.error){const msg=String(r.error.message||'');M.toast(msg.includes('table_has_active_orders')?'لا يمكن إغلاق الترابيزة وهناك طلبات ما زالت جديدة أو قيد التجهيز.':'تعذر تحديث الترابيزة');return}
+    M.toast('تم تحديث الترابيزة');await reload();
   };
 }
 install();
