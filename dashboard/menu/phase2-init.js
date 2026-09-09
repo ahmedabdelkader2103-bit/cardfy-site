@@ -23,14 +23,16 @@ function installPhase2Preview(){
   };
 }
 function markPhase2(){
-  const badge=document.querySelector('.top-actions .badge:not(.admin)');if(badge)badge.textContent='Phase 2';
-  const sub=document.querySelector('.topbar .muted');if(sub)sub.innerHTML=`<span id="clientCode">${state.session?.client?.code||''}</span> · Catalog Management`;
-  const status=[...document.querySelectorAll('.card h3')].find(x=>x.textContent.trim()==='حالة المرحلة')?.parentElement;
-  if(status){const p=status.querySelector('p');if(p)p.textContent='Phase 2 تفعّل إدارة الأقسام والمنتجات والصور وDuplicate وVariants والإضافات الديناميكية القابلة لإعادة الاستخدام. الطلبات العامة وPOS وAnalytics تظل لمراحلها اللاحقة.'}
+  const badge=document.querySelector('.top-actions .badge:not(.admin)');if(badge)badge.textContent='Professional Menu';
+  const sub=document.querySelector('.topbar .muted');if(sub)sub.innerHTML=`<span id="clientCode">${state.session?.client?.code||''}</span> · Owner Console`;
 }
 function loadPhase3Owner(){
   if(document.querySelector('script[data-phase3-owner]'))return;
-  const s=document.createElement('script');s.src='/dashboard/menu/phase3-owner.js';s.dataset.phase3Owner='1';document.body.appendChild(s);
+  const s=document.createElement('script');s.src='/dashboard/menu/phase3-owner.js';s.dataset.phase3Owner='1';s.onload=loadCompletionTools;document.body.appendChild(s);
+}
+function loadCompletionTools(){
+  if(document.querySelector('script[data-completion-tools]'))return;
+  const s=document.createElement('script');s.src='/dashboard/menu/completion-tools.js';s.dataset.completionTools='1';document.body.appendChild(s);
 }
 function tryStart(){
   if(started)return;
