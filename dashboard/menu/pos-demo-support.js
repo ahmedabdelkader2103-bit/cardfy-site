@@ -1,0 +1,7 @@
+(function(){
+let installed=false,lastType='';const labels={cash:'كاش',card_at_venue:'بطاقة عند المطعم',pay_on_delivery:'الدفع عند الاستلام'};
+function methods(){const enabled=Array.isArray(catalog?.settings?.payment_methods)?catalog.settings.payment_methods:['cash','card_at_venue','pay_on_delivery'];return orderType==='delivery'?enabled.filter(x=>['pay_on_delivery','cash'].includes(x)):enabled.filter(x=>['cash','card_at_venue'].includes(x))}
+function renderPayment(){const host=document.querySelector('.order-config');if(!host||typeof catalog==='undefined'||!catalog)return;let s=document.getElementById('posPayment');if(!s){s=document.createElement('select');s.id='posPayment';host.appendChild(s)}const ms=methods(),prev=s.value;s.innerHTML=ms.map(m=>`<option value="${m}">${labels[m]||m}</option>`).join('');if(ms.includes(prev))s.value=prev;else if(orderType==='delivery'&&ms.includes('pay_on_delivery'))s.value='pay_on_delivery';else s.value=ms[0]||''}
+function install(){if(installed)return;if(typeof M==='undefined'||typeof catalog==='undefined'){setTimeout(install,80);return}installed=true;const base=M.sb.rpc.bind(M.sb);M.sb.rpc=function(fn,args,opts){if(fn==='cfy_menu_owner_create_order'){return base('cfy_menu_owner_create_order_v3',{...args,p_order:{...(args?.p_order||{}),payment_method:document.getElementById('posPayment')?.value||''}},opts)}return base(fn,args,opts)};setInterval(()=>{if(lastType!==orderType){lastType=orderType;renderPayment()}else renderPayment()},350)}
+install();
+})();
