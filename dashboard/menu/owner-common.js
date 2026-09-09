@@ -1,0 +1,11 @@
+(function(){
+const sb=window.supabase.createClient('https://ytixcczbjmjnuotzavbb.supabase.co','sb_publishable_0j9jf0boDrMGGO8S6mw-4Q_5bOeHIuU');
+const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=(v,c='EGP')=>Number(v||0).toLocaleString('ar-EG',{maximumFractionDigits:2})+' '+(c==='EGP'?'ج.م':c);
+function toast(msg){let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.className='toast';document.body.appendChild(t)}t.textContent=msg;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),2300)}
+async function boot(options={ops:true,catalog:false}){const key=localStorage.getItem('cardfy_client_token_v1')||'';if(!key){location='/client-dashboard.html';throw new Error('no_session')}const sessionRes=await sb.rpc('cfy_client_session',{p_token:key});const session=sessionRes.data;if(sessionRes.error||!session?.client||!(session.services||[]).includes('menu')){location='/client-dashboard.html';throw sessionRes.error||new Error('invalid_session')}const result={key,session,sb,ops:null,catalog:null};if(options.ops){const r=await sb.rpc('cfy_menu_operational_snapshot',{p_token:key,p_limit:200});if(r.error)throw r.error;result.ops=r.data||{}}if(options.catalog){const r=await sb.rpc('cfy_menu_manage_snapshot',{p_token:key});if(r.error)throw r.error;result.catalog=r.data||{}}const chip=document.getElementById('clientChip');if(chip)chip.innerHTML=`<b>${safe(session.client.brand_name_ar||session.client.brand_name_en||'CARDfy')}</b><span>${safe(session.client.code)}</span>`;return result}
+function statusLabel(s){return({new:'جديد',preparing:'جاري التجهيز',ready:'جاهز',on_the_way:'في الطريق',delivered:'تم التوصيل',completed:'مكتمل',cancelled:'ملغي'})[s]||s}
+function orderType(t){return t==='delivery'?'توصيل':t==='takeaway'?'استلام':t==='dinein'?'داخل المطعم':t}
+function orderSource(s){return s==='pos'?'POS':s==='phone'?'هاتف':'Online'}
+window.MenuOwner={sb,safe,money,toast,boot,statusLabel,orderType,orderSource};
+})();
