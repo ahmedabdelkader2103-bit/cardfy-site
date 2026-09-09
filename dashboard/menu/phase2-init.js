@@ -23,19 +23,30 @@ function installPhase2Preview(){
   };
 }
 function markPhase2(){
-  const badge=document.querySelector('.top-actions .badge:not(.admin)');if(badge)badge.textContent='Phase 2';
-  const sub=document.querySelector('.topbar .muted');if(sub)sub.innerHTML=`<span id="clientCode">${state.session?.client?.code||''}</span> · Catalog Management`;
-  const status=[...document.querySelectorAll('.card h3')].find(x=>x.textContent.trim()==='حالة المرحلة')?.parentElement;
-  if(status){const p=status.querySelector('p');if(p)p.textContent='Phase 2 تفعّل إدارة الأقسام والمنتجات والصور وDuplicate وVariants والإضافات الديناميكية القابلة لإعادة الاستخدام. الطلبات العامة وPOS وAnalytics تظل لمراحلها اللاحقة.'}
+  const badge=document.querySelector('.top-actions .badge:not(.admin)');if(badge)badge.textContent='Professional Menu';
+  const sub=document.querySelector('.topbar .muted');if(sub)sub.innerHTML=`<span id="clientCode">${state.session?.client?.code||''}</span> · Owner Console`;
+}
+function installOwnerNav(){
+  const routes={orders:'/dashboard/menu/orders.html',pos:'/dashboard/menu/pos.html',analytics:'/dashboard/menu/analytics.html',settings:'/dashboard/menu/settings.html'};
+  const labels={orders:'Live',pos:'Live',analytics:'Live',settings:'Live',tools:'نشط'};
+  document.querySelectorAll('.nav button[data-section]').forEach(btn=>{
+    const section=btn.dataset.section,tag=btn.querySelector('.tag');if(tag&&labels[section])tag.textContent=labels[section];
+    if(!routes[section]||btn.dataset.navReady==='1')return;btn.dataset.navReady='1';
+    btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();location.href=routes[section]},true);
+  });
 }
 function loadPhase3Owner(){
   if(document.querySelector('script[data-phase3-owner]'))return;
-  const s=document.createElement('script');s.src='/dashboard/menu/phase3-owner.js';s.dataset.phase3Owner='1';document.body.appendChild(s);
+  const s=document.createElement('script');s.src='/dashboard/menu/phase3-owner.js';s.dataset.phase3Owner='1';s.onload=loadCompletionTools;document.body.appendChild(s);
+}
+function loadCompletionTools(){
+  if(document.querySelector('script[data-completion-tools]'))return;
+  const s=document.createElement('script');s.src='/dashboard/menu/completion-tools.js';s.dataset.completionTools='1';document.body.appendChild(s);
 }
 function tryStart(){
   if(started)return;
   if(typeof state==='undefined'||!state?.token||!state?.snapshot||!window.MenuCatalog){setTimeout(tryStart,80);return}
-  started=true;installPhase2Preview();markPhase2();renderPreview();
+  started=true;installPhase2Preview();markPhase2();installOwnerNav();renderPreview();
   window.MenuCatalog.init({sb,token:state.token,getSnapshot:()=>state.snapshot,reload:reloadPhase2,toast});
   loadPhase3Owner();
 }

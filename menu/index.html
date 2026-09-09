@@ -8,6 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="/menu/menu.css">
 <link rel="stylesheet" href="/menu/phase3-extra.css">
+<link rel="stylesheet" href="/menu/checkout.css">
 <style>[hidden]{display:none!important}</style>
 </head>
 <body>
@@ -60,14 +61,17 @@
 
 <div id="cartDrawer" class="drawer-backdrop" hidden>
   <div class="drawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
-    <div class="drawer-head"><div><h2 id="cartTitle">سلتك</h2><p>راجع الأصناف قبل مرحلة إتمام الطلب.</p></div><button id="closeCart" class="close-btn">×</button></div>
+    <div class="drawer-head"><div><h2 id="cartTitle">سلتك</h2><p>راجع الأصناف قبل إتمام الطلب.</p></div><button id="closeCart" class="close-btn">×</button></div>
     <div id="cartItems" class="cart-items"></div>
-    <div class="cart-summary"><span>الإجمالي الحالي</span><strong id="drawerTotal"></strong></div>
-    <button class="checkout-disabled" disabled>إتمام الطلب — سيتم تفعيله بعد استكمال التسعير والدفع</button>
+    <div class="cart-summary"><span>الإجمالي المبدئي</span><strong id="drawerTotal"></strong></div>
+    <button class="checkout-disabled" disabled>إتمام الطلب</button>
   </div>
 </div>
 
 <div id="toast" class="toast"></div>
 <script src="/menu/menu.js"></script>
+<script src="/menu/public-state.js"></script>
+<script src="/menu/checkout.js"></script>
+<script src="/menu/commerce-visuals.js"></script>
 </body>
 </html>

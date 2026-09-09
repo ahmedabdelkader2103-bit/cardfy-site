@@ -1,0 +1,22 @@
+const SUPA_URL='https://ytixcczbjmjnuotzavbb.supabase.co';
+const SUPA_KEY='sb_publishable_0j9jf0boDrMGGO8S6mw-4Q_5bOeHIuU';
+const sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+const $=s=>document.querySelector(s);
+const params=new URLSearchParams(location.search),ref=(params.get('ref')||'').trim().toUpperCase(),token=(params.get('token')||'').trim();
+let selectedRating=0,current=null;
+const statusLabels={new:'تم إرسال الطلب',preparing:'جاري التجهيز',ready:'تم التجهيز',on_the_way:'في الطريق',delivered:'تم التوصيل',completed:'مكتمل',cancelled:'ملغي'};
+function safe(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function money(v){return Number(v||0).toLocaleString('ar-EG',{maximumFractionDigits:2})+' ج.م'}
+function dt(v){if(!v)return '';try{return new Date(v).toLocaleString('ar-EG',{dateStyle:'short',timeStyle:'short'})}catch(_){return ''}}
+function stepsFor(o){const common=[['new','تم إرسال الطلب',o.created_at],['accepted','تم استلام الطلب',o.accepted_at],['preparing','جاري التجهيز',o.preparing_at],['ready','تم التجهيز',o.ready_at]];if(o.order_type==='delivery')common.push(['on_the_way','في الطريق',o.picked_up_at],['delivered','تم التوصيل',o.delivered_at]);common.push(['completed','مكتمل',o.completed_at]);return common}
+function statusRank(o,key){const order=o.order_type==='delivery'?['new','accepted','preparing','ready','on_the_way','delivered','completed']:['new','accepted','preparing','ready','completed'];const statusKey=o.status==='preparing'&&o.accepted_at?'preparing':o.status;return order.indexOf(key)<=order.indexOf(statusKey)}
+function render(o){current=o;$('#loading').hidden=true;$('#content').hidden=false;$('#ref').textContent=o.reference;$('#statusBadge').textContent=statusLabels[o.status]||o.status;if(o.table_number){$('#tableInfo').hidden=false;$('#tableInfo').textContent='ترابيزة: '+o.table_number}
+  const steps=stepsFor(o);$('#timeline').innerHTML=steps.map(([k,l,t])=>{const done=!!t||statusRank(o,k),current=(k==='accepted'?o.status==='preparing'&&!!o.accepted_at:o.status===k);return `<div class="step ${done?'done':''} ${current?'current':''}"><div class="dot">${done?'✓':''}</div><div class="step-copy"><b>${l}</b><small>${t?dt(t):''}</small></div></div>`}).join('');
+  const items=(o.items||[]).map(i=>{const s=i.snapshot||{},p=s.product||{},variant=s.variant,opts=s.options||[];return `<div class="item"><b>${i.quantity} × ${safe(p.name_ar||p.name_en||'منتج')}</b><small>${variant?safe(variant.name)+' · ':''}${opts.map(x=>safe(x.name)).join('، ')}</small></div>`}).join('');
+  $('#summary').innerHTML=`<div class="row"><span>نوع الطلب</span><b>${o.order_type==='delivery'?'توصيل':o.order_type==='takeaway'?'استلام':'داخل المطعم'}</b></div>${o.scheduled_for?`<div class="row"><span>الموعد</span><b>${dt(o.scheduled_for)}</b></div>`:''}<div class="items">${items}</div><div class="row total"><span>الإجمالي</span><b>${money(o.total)}</b></div>`;
+  $('#issue').hidden=!o.issue_open;const canRate=['delivered','completed'].includes(o.status);$('#ratingBox').hidden=!canRate;if(o.rating){selectedRating=o.rating;renderStars();$('#ratingStatus').textContent='تم إرسال تقييمك: '+o.rating+'/5'}
+}
+function renderStars(){const host=$('#stars');host.innerHTML=[1,2,3,4,5].map(n=>`<button data-rate="${n}" class="${n<=selectedRating?'on':''}">★</button>`).join('');host.querySelectorAll('button').forEach(b=>b.onclick=()=>{selectedRating=Number(b.dataset.rate);renderStars()})}
+async function load(){if(!ref||!token){$('#loading').hidden=true;$('#error').hidden=false;$('#error').textContent='رابط متابعة الطلب غير مكتمل.';return}const {data,error}=await sb.rpc('cfy_menu_public_order_track',{p_reference:ref,p_token:token});if(error||!data){$('#loading').hidden=true;$('#error').hidden=false;$('#error').textContent='تعذر العثور على الطلب أو انتهت صلاحية الرابط.';return}render(data)}
+$('#sendRating').onclick=async()=>{if(!selectedRating){$('#ratingStatus').textContent='اختر عدد النجوم أولًا.';return}const {data,error}=await sb.rpc('cfy_menu_public_feedback',{p_reference:ref,p_token:token,p_rating:selectedRating,p_feedback:$('#feedback').value.trim()});$('#ratingStatus').textContent=error||!data?'تعذر إرسال التقييم.':'شكرًا، تم حفظ تقييمك.'};
+renderStars();load();setInterval(load,20000);

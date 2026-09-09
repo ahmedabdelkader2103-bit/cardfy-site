@@ -17,7 +17,7 @@ function renderOperatingPanel(){
     <label class="toggle"><span>Dine-in</span><input id="opDinein" type="checkbox" ${s.dinein_enabled===true?'checked':''}></label>
     <label class="toggle"><span>Table QR Ordering</span><input id="opTableQr" type="checkbox" ${s.table_qr_enabled===true?'checked':''}></label>
   </div>
-  <div class="phase-note">Table QR اختياري. عند إيقافه يظل Dine-in متاحًا للكاشير/الجرسون لاحقًا. إدارة الترابيزات والجلسات نفسها ستدخل مع مرحلة الطلبات التشغيلية.</div>
+  <div class="phase-note">Table QR اختياري. عند إيقافه يظل Dine-in متاحًا للكاشير أو فريق التشغيل من الـPOS، وتظل نفس بنية المنيو مستخدمة في كل أوضاع التشغيل.</div>
   <div class="save-row"><button id="saveOperating" class="btn">حفظ نظام التشغيل</button><div id="operatingStatus" class="status"></div></div>`;
   val('opTableQr').addEventListener('change',()=>{if(val('opTableQr').checked&&!val('opDinein').checked){val('opDinein').checked=true;toast('تم تفعيل Dine-in لأن Table QR يحتاجه')}});
   val('opDinein').addEventListener('change',()=>{if(!val('opDinein').checked&&val('opTableQr').checked){val('opTableQr').checked=false;toast('تم إيقاف Table QR مع Dine-in')}});
@@ -37,11 +37,16 @@ function installPublicMenuActions(){
   const panel=document.querySelector('[data-panel="preview"]');if(!panel||document.getElementById('publicMenuActions'))return;
   const code=state.session?.client?.code||'';const url=location.origin+'/menu/?code='+encodeURIComponent(code);
   const note=panel.querySelector('.phase-note');
-  const wrap=document.createElement('div');wrap.id='publicMenuActions';wrap.className='phase-note';wrap.style.marginTop='12px';wrap.innerHTML=`<b>المنيو العامة الجديدة — Phase 3</b><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:9px"><input id="publicMenuUrl" readonly dir="ltr" value="${url}" style="flex:1;min-width:220px;border:1px solid #dfe4ec;border-radius:10px;padding:9px 10px;background:#fff"><button id="copyPublicMenu" class="btn secondary">نسخ الرابط</button><a class="btn" href="${url}" target="_blank" rel="noopener" style="text-decoration:none">فتح المنيو الحقيقية</a></div><div class="muted" style="font-size:10px;margin-top:7px">هذا Route جديد منفصل، ولا يغيّر QR/URL القديم الحالي.</div>`;
+  const wrap=document.createElement('div');wrap.id='publicMenuActions';wrap.className='phase-note';wrap.style.marginTop='12px';wrap.innerHTML=`<b>المنيو العامة</b><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:9px"><input id="publicMenuUrl" readonly dir="ltr" value="${url}" style="flex:1;min-width:220px;border:1px solid #dfe4ec;border-radius:10px;padding:9px 10px;background:#fff"><button id="copyPublicMenu" class="btn secondary">نسخ الرابط</button><a class="btn" href="${url}" target="_blank" rel="noopener" style="text-decoration:none">فتح المنيو الحقيقية</a></div><div class="muted" style="font-size:10px;margin-top:7px">هذا رابط Professional Menu المستقل، والـQR/URL القديم يظل محفوظًا حتى قرار التحويل النهائي.</div>`;
   if(note)note.after(wrap);else panel.appendChild(wrap);
   val('copyPublicMenu').onclick=async()=>{try{await navigator.clipboard.writeText(url);toast('تم نسخ رابط المنيو')}catch(_){val('publicMenuUrl').select();document.execCommand('copy');toast('تم نسخ رابط المنيو')}};
 }
-function markPhase3(){const badge=document.querySelector('.top-actions .badge:not(.admin)');if(badge)badge.textContent='Phase 3';const sub=document.querySelector('.topbar .muted');if(sub)sub.innerHTML=`<span id="clientCode">${state.session?.client?.code||''}</span> · Customer Menu Foundation`;const status=[...document.querySelectorAll('.card h3')].find(x=>x.textContent.trim()==='حالة المرحلة')?.parentElement;if(status){const p=status.querySelector('p');if(p)p.textContent='Phase 3 تبني المنيو العامة الحقيقية وتجربة التصفح والتخصيص والسلة المحلية الأساسية، مع تجهيز Operating Modes. Checkout والطلبات الفعلية تظل للمرحلة التالية.'}}
-function start(){if(started)return;if(typeof state==='undefined'||!state?.snapshot||!state?.session){setTimeout(start,80);return}started=true;markPhase3();renderOperatingPanel();installPublicMenuActions()}
+function markProduction(){
+  const badge=document.querySelector('.top-actions .badge:not(.admin)');if(badge)badge.textContent='Professional Menu';
+  const sub=document.querySelector('.topbar .muted');if(sub)sub.innerHTML=`<span id="clientCode">${state.session?.client?.code||''}</span> · Owner Console`;
+  const status=[...document.querySelectorAll('.card h3')].find(x=>x.textContent.trim()==='حالة المرحلة')?.parentElement;
+  if(status){const h=status.querySelector('h3');if(h)h.textContent='حالة النظام';const p=status.querySelector('p');if(p)p.textContent='لوحة Professional Menu متصلة بالحساب والكتالوج والطلبات التشغيلية. استخدم الأقسام بالأعلى لإدارة المنيو ثم افتح الرابط العام للمعاينة والاختبار.'}
+}
+function start(){if(started)return;if(typeof state==='undefined'||!state?.snapshot||!state?.session){setTimeout(start,80);return}started=true;markProduction();renderOperatingPanel();installPublicMenuActions()}
 start();
 })();
