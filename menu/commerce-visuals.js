@@ -10,6 +10,14 @@ function discountAmount(product,gross){
   return Math.max(0,Math.min(best,gross));
 }
 function discountedUnit(product,gross){return Math.max(0,gross-discountAmount(product,gross))}
+async function refreshOpenState(){
+  if(typeof sb==='undefined'||typeof state==='undefined'||!state.code)return;
+  const {data}=await sb.rpc('cfy_menu_public_state',{p_code:state.code});if(!data)return;
+  state.settings={...state.settings,is_open_now:data.is_open_now,scheduled_ordering_enabled:data.scheduled_ordering_enabled,asap_enabled:data.asap_enabled,timezone:data.timezone};
+  const b=document.getElementById('openBadge');if(!b)return;
+  if(data.is_open_now){b.textContent='مفتوح الآن';b.classList.remove('closed')}
+  else{b.textContent=data.scheduled_ordering_enabled?'مغلق الآن · الطلب المجدول متاح':'مغلق حاليًا';b.classList.add('closed')}
+}
 function install(){
   if(typeof productCard!=='function'||typeof currentDetailUnit!=='function'||typeof addCartItem!=='function'||typeof state==='undefined'){setTimeout(install,80);return}
   if(window.__cardfyCommerceVisuals)return;window.__cardfyCommerceVisuals=true;
@@ -39,7 +47,8 @@ function install(){
     persistCart();
   };
 
-  const wait=()=>{if(state.catalog){renderAll();renderCartBar();if(state.detail)renderDetails()}else setTimeout(wait,80)};wait();
+  const wait=()=>{if(state.catalog){renderAll();renderCartBar();if(state.detail)renderDetails();refreshOpenState()}else setTimeout(wait,80)};wait();
+  setInterval(refreshOpenState,60000);
 }
 install();
 })();
