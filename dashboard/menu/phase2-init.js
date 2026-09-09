@@ -39,9 +39,13 @@ function loadPhase3Owner(){
   if(document.querySelector('script[data-phase3-owner]'))return;
   const s=document.createElement('script');s.src='/dashboard/menu/phase3-owner.js';s.dataset.phase3Owner='1';s.onload=loadCompletionTools;document.body.appendChild(s);
 }
+function loadDemoDisplay(){
+  if(document.querySelector('script[data-demo-display]'))return;
+  const s=document.createElement('script');s.src='/dashboard/menu/tools-demo-display.js';s.dataset.demoDisplay='1';document.body.appendChild(s);
+}
 function loadCompletionTools(){
-  if(document.querySelector('script[data-completion-tools]'))return;
-  const s=document.createElement('script');s.src='/dashboard/menu/completion-tools.js';s.dataset.completionTools='1';document.body.appendChild(s);
+  if(document.querySelector('script[data-completion-tools]')){loadDemoDisplay();return}
+  const s=document.createElement('script');s.src='/dashboard/menu/completion-tools.js';s.dataset.completionTools='1';s.onload=loadDemoDisplay;document.body.appendChild(s);
 }
 function tryStart(){
   if(started)return;
