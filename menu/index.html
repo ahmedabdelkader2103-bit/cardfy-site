@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>CARDfy — Professional Menu</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="/menu/menu.css">
+<link rel="stylesheet" href="/menu/phase3-extra.css">
+<style>[hidden]{display:none!important}</style>
+</head>
+<body>
+<div id="loading" class="page-state">جاري تحميل المنيو...</div>
+<div id="fatal" class="page-state error" hidden></div>
+<div id="app" hidden>
+  <header class="hero">
+    <div id="cover" class="cover"><div class="hero-shade"></div></div>
+    <div class="restaurant-head">
+      <div id="logo" class="logo">CF</div>
+      <div class="restaurant-copy">
+        <div class="name-line"><h1 id="restaurantName">Professional Menu</h1><span id="openBadge" class="open-badge"></span></div>
+        <p id="description" class="description"></p>
+        <div id="contactRow" class="contacts"></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="browse-sticky">
+      <label class="search-wrap"><span>⌕</span><input id="search" type="search" placeholder="ابحث في المنيو..." autocomplete="off"></label>
+      <div id="categories" class="categories"></div>
+    </div>
+
+    <section id="featuredSection" class="section" hidden>
+      <div class="section-head"><h2>مميز عندنا</h2><span>اختيارات مقترحة</span></div>
+      <div id="featuredGrid" class="product-grid featured-grid"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2 id="productsTitle">المنيو</h2><span id="productsCount"></span></div>
+      <div id="productsGrid" class="product-grid"></div>
+      <div id="emptyState" class="empty" hidden>لا توجد أصناف مطابقة حاليًا.</div>
+    </section>
+  </main>
+
+  <button id="cartBar" class="cart-bar" hidden>
+    <span><b id="cartCount">0</b> عناصر</span>
+    <strong id="cartTotal">0 ج.م</strong>
+    <span>عرض السلة ←</span>
+  </button>
+</div>
+
+<div id="productModal" class="modal-backdrop" hidden>
+  <div class="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="productModalTitle">
+    <button id="closeProduct" class="close-btn" aria-label="إغلاق">×</button>
+    <div id="productModalBody"></div>
+  </div>
+</div>
+
+<div id="cartDrawer" class="drawer-backdrop" hidden>
+  <div class="drawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+    <div class="drawer-head"><div><h2 id="cartTitle">سلتك</h2><p>راجع الأصناف قبل مرحلة إتمام الطلب.</p></div><button id="closeCart" class="close-btn">×</button></div>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-summary"><span>الإجمالي الحالي</span><strong id="drawerTotal"></strong></div>
+    <button class="checkout-disabled" disabled>إتمام الطلب — سيتم تفعيله بعد استكمال التسعير والدفع</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="/menu/menu.js"></script>
+</body>
+</html>

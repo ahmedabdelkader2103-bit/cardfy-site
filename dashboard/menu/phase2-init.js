@@ -28,11 +28,16 @@ function markPhase2(){
   const status=[...document.querySelectorAll('.card h3')].find(x=>x.textContent.trim()==='حالة المرحلة')?.parentElement;
   if(status){const p=status.querySelector('p');if(p)p.textContent='Phase 2 تفعّل إدارة الأقسام والمنتجات والصور وDuplicate وVariants والإضافات الديناميكية القابلة لإعادة الاستخدام. الطلبات العامة وPOS وAnalytics تظل لمراحلها اللاحقة.'}
 }
+function loadPhase3Owner(){
+  if(document.querySelector('script[data-phase3-owner]'))return;
+  const s=document.createElement('script');s.src='/dashboard/menu/phase3-owner.js';s.dataset.phase3Owner='1';document.body.appendChild(s);
+}
 function tryStart(){
   if(started)return;
   if(typeof state==='undefined'||!state?.token||!state?.snapshot||!window.MenuCatalog){setTimeout(tryStart,80);return}
   started=true;installPhase2Preview();markPhase2();renderPreview();
   window.MenuCatalog.init({sb,token:state.token,getSnapshot:()=>state.snapshot,reload:reloadPhase2,toast});
+  loadPhase3Owner();
 }
 tryStart();
 })();
