@@ -1,0 +1,1220 @@
+[
+  {
+    "table_name": "app_settings",
+    "column_name": "key",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "app_settings",
+    "column_name": "value",
+    "data_type": "jsonb",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_admin_users",
+    "column_name": "user_id",
+    "data_type": "uuid",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_admin_users",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "not_null": true,
+    "default_expr": "now()"
+  },
+  {
+    "table_name": "cfy_menu_coupons",
+    "column_name": "id",
+    "data_type": "uuid",
+    "not_null": true,
+    "default_expr": "gen_random_uuid()"
+  },
+  {
+    "table_name": "cfy_menu_coupons",
+    "column_name": "client_id",
+    "data_type": "uuid",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_coupons",
+    "column_name": "code",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_coupons",
+    "column_name": "discount_type",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_coupons",
+    "column_name": "value",
+    "data_type": "numeric(12,2)",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_coupons",
+    "column_name": "starts_at",
+    "data_type": "timestamp with time zone",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_coupons",
+    "column_name": "ends_at",
+    "data_type": "timestamp with time zone",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_coupons",
+    "column_name": "max_usage",
+    "data_type": "integer",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_coupons",
+    "column_name": "used_count",
+    "data_type": "integer",
+    "not_null": true,
+    "default_expr": "0"
+  },
+  {
+    "table_name": "cfy_menu_coupons",
+    "column_name": "minimum_order",
+    "data_type": "numeric(12,2)",
+    "not_null": true,
+    "default_expr": "0"
+  },
+  {
+    "table_name": "cfy_menu_coupons",
+    "column_name": "enabled",
+    "data_type": "boolean",
+    "not_null": true,
+    "default_expr": "true"
+  },
+  {
+    "table_name": "cfy_menu_coupons",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "not_null": true,
+    "default_expr": "now()"
+  },
+  {
+    "table_name": "cfy_menu_coupons",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "not_null": true,
+    "default_expr": "now()"
+  },
+  {
+    "table_name": "cfy_menu_coupons",
+    "column_name": "max_discount",
+    "data_type": "numeric(12,2)",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_delivery_assignments",
+    "column_name": "id",
+    "data_type": "uuid",
+    "not_null": true,
+    "default_expr": "gen_random_uuid()"
+  },
+  {
+    "table_name": "cfy_menu_delivery_assignments",
+    "column_name": "client_id",
+    "data_type": "uuid",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_delivery_assignments",
+    "column_name": "order_id",
+    "data_type": "uuid",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_delivery_assignments",
+    "column_name": "driver_id",
+    "data_type": "uuid",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_delivery_assignments",
+    "column_name": "status",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "'assigned'::text"
+  },
+  {
+    "table_name": "cfy_menu_delivery_assignments",
+    "column_name": "assigned_at",
+    "data_type": "timestamp with time zone",
+    "not_null": true,
+    "default_expr": "now()"
+  },
+  {
+    "table_name": "cfy_menu_delivery_assignments",
+    "column_name": "picked_up_at",
+    "data_type": "timestamp with time zone",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_delivery_assignments",
+    "column_name": "delivered_at",
+    "data_type": "timestamp with time zone",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_delivery_assignments",
+    "column_name": "cancelled_at",
+    "data_type": "timestamp with time zone",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_delivery_assignments",
+    "column_name": "assigned_by_type",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "'owner'::text"
+  },
+  {
+    "table_name": "cfy_menu_delivery_assignments",
+    "column_name": "assigned_by_id",
+    "data_type": "uuid",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_delivery_assignments",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "not_null": true,
+    "default_expr": "now()"
+  },
+  {
+    "table_name": "cfy_menu_order_events",
+    "column_name": "id",
+    "data_type": "uuid",
+    "not_null": true,
+    "default_expr": "gen_random_uuid()"
+  },
+  {
+    "table_name": "cfy_menu_order_events",
+    "column_name": "order_id",
+    "data_type": "uuid",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_order_events",
+    "column_name": "client_id",
+    "data_type": "uuid",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_order_events",
+    "column_name": "event_type",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_order_events",
+    "column_name": "actor_type",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "'system'::text"
+  },
+  {
+    "table_name": "cfy_menu_order_events",
+    "column_name": "actor_id",
+    "data_type": "uuid",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_order_events",
+    "column_name": "data",
+    "data_type": "jsonb",
+    "not_null": true,
+    "default_expr": "'{}'::jsonb"
+  },
+  {
+    "table_name": "cfy_menu_order_events",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "not_null": true,
+    "default_expr": "now()"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "id",
+    "data_type": "uuid",
+    "not_null": true,
+    "default_expr": "gen_random_uuid()"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "reference",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "client_id",
+    "data_type": "uuid",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "order_type",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "customer_name",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "''::text"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "phone",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "''::text"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "address",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "''::text"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "delivery_zone_id",
+    "data_type": "uuid",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "table_number",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "''::text"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "pickup_time",
+    "data_type": "timestamp with time zone",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "notes",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "''::text"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "coupon_code",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "products_subtotal",
+    "data_type": "numeric(12,2)",
+    "not_null": true,
+    "default_expr": "0"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "product_discount",
+    "data_type": "numeric(12,2)",
+    "not_null": true,
+    "default_expr": "0"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "coupon_discount",
+    "data_type": "numeric(12,2)",
+    "not_null": true,
+    "default_expr": "0"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "delivery_fee",
+    "data_type": "numeric(12,2)",
+    "not_null": true,
+    "default_expr": "0"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "total",
+    "data_type": "numeric(12,2)",
+    "not_null": true,
+    "default_expr": "0"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "status",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "'new'::text"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "not_null": true,
+    "default_expr": "now()"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "not_null": true,
+    "default_expr": "now()"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "order_source",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "'online'::text"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "table_id",
+    "data_type": "uuid",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "table_session_id",
+    "data_type": "uuid",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "assigned_driver_id",
+    "data_type": "uuid",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "scheduled_for",
+    "data_type": "timestamp with time zone",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "idempotency_key",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "tracking_token_hash",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "delivery_otp_hash",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "payment_method",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "'cash'::text"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "payment_status",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "'unpaid'::text"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "accepted_at",
+    "data_type": "timestamp with time zone",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "preparing_at",
+    "data_type": "timestamp with time zone",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "ready_at",
+    "data_type": "timestamp with time zone",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "picked_up_at",
+    "data_type": "timestamp with time zone",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "delivered_at",
+    "data_type": "timestamp with time zone",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "completed_at",
+    "data_type": "timestamp with time zone",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "cancelled_at",
+    "data_type": "timestamp with time zone",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "issue_open",
+    "data_type": "boolean",
+    "not_null": true,
+    "default_expr": "false"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "issue_text",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "''::text"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "rating",
+    "data_type": "integer",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "feedback",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "''::text"
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "paid_at",
+    "data_type": "timestamp with time zone",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "food_quality_rating",
+    "data_type": "integer",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "delivery_speed_rating",
+    "data_type": "integer",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_orders",
+    "column_name": "packaging_rating",
+    "data_type": "integer",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_print_jobs",
+    "column_name": "id",
+    "data_type": "uuid",
+    "not_null": true,
+    "default_expr": "gen_random_uuid()"
+  },
+  {
+    "table_name": "cfy_menu_print_jobs",
+    "column_name": "client_id",
+    "data_type": "uuid",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_print_jobs",
+    "column_name": "order_id",
+    "data_type": "uuid",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_print_jobs",
+    "column_name": "job_type",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_print_jobs",
+    "column_name": "status",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "'pending'::text"
+  },
+  {
+    "table_name": "cfy_menu_print_jobs",
+    "column_name": "copies",
+    "data_type": "integer",
+    "not_null": true,
+    "default_expr": "1"
+  },
+  {
+    "table_name": "cfy_menu_print_jobs",
+    "column_name": "payload",
+    "data_type": "jsonb",
+    "not_null": true,
+    "default_expr": "'{}'::jsonb"
+  },
+  {
+    "table_name": "cfy_menu_print_jobs",
+    "column_name": "last_error",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "''::text"
+  },
+  {
+    "table_name": "cfy_menu_print_jobs",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "not_null": true,
+    "default_expr": "now()"
+  },
+  {
+    "table_name": "cfy_menu_print_jobs",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "not_null": true,
+    "default_expr": "now()"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "client_id",
+    "data_type": "uuid",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "logo_url",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "''::text"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "description",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "''::text"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "currency",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "'EGP'::text"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "restaurant_open",
+    "data_type": "boolean",
+    "not_null": true,
+    "default_expr": "true"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "opening_hours",
+    "data_type": "jsonb",
+    "not_null": true,
+    "default_expr": "'{}'::jsonb"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "delivery_enabled",
+    "data_type": "boolean",
+    "not_null": true,
+    "default_expr": "true"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "takeaway_enabled",
+    "data_type": "boolean",
+    "not_null": true,
+    "default_expr": "true"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "dinein_enabled",
+    "data_type": "boolean",
+    "not_null": true,
+    "default_expr": "false"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "asap_enabled",
+    "data_type": "boolean",
+    "not_null": true,
+    "default_expr": "true"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "pickup_scheduling_enabled",
+    "data_type": "boolean",
+    "not_null": true,
+    "default_expr": "false"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "average_prep_minutes",
+    "data_type": "integer",
+    "not_null": true,
+    "default_expr": "30"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "max_advance_days",
+    "data_type": "integer",
+    "not_null": true,
+    "default_expr": "7"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "pickup_settings",
+    "data_type": "jsonb",
+    "not_null": true,
+    "default_expr": "'{}'::jsonb"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "not_null": true,
+    "default_expr": "now()"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "not_null": true,
+    "default_expr": "now()"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "display_name",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "''::text"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "cover_url",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "''::text"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "restaurant_phone",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "''::text"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "restaurant_whatsapp",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "''::text"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "address",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "''::text"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "map_link",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "''::text"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "theme_mode",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "'light'::text"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "accent_color",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "'#ff6b1a'::text"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "layout_preset",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "'classic'::text"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "show_cover",
+    "data_type": "boolean",
+    "not_null": true,
+    "default_expr": "true"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "show_description",
+    "data_type": "boolean",
+    "not_null": true,
+    "default_expr": "true"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "show_contact_buttons",
+    "data_type": "boolean",
+    "not_null": true,
+    "default_expr": "true"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "operating_mode",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "'restaurant'::text"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "table_qr_enabled",
+    "data_type": "boolean",
+    "not_null": true,
+    "default_expr": "false"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "tracking_enabled",
+    "data_type": "boolean",
+    "not_null": true,
+    "default_expr": "true"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "otp_enabled",
+    "data_type": "boolean",
+    "not_null": true,
+    "default_expr": "true"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "kitchen_printer_enabled",
+    "data_type": "boolean",
+    "not_null": true,
+    "default_expr": "false"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "cashier_printer_enabled",
+    "data_type": "boolean",
+    "not_null": true,
+    "default_expr": "false"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "auto_print_kitchen",
+    "data_type": "boolean",
+    "not_null": true,
+    "default_expr": "false"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "print_copies",
+    "data_type": "integer",
+    "not_null": true,
+    "default_expr": "1"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "scheduled_ordering_enabled",
+    "data_type": "boolean",
+    "not_null": true,
+    "default_expr": "false"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "timezone",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "'Africa/Cairo'::text"
+  },
+  {
+    "table_name": "cfy_menu_settings",
+    "column_name": "payment_methods",
+    "data_type": "jsonb",
+    "not_null": true,
+    "default_expr": "'[\"cash\", \"card_at_venue\", \"pay_on_delivery\"]'::jsonb"
+  },
+  {
+    "table_name": "cfy_menu_staff",
+    "column_name": "id",
+    "data_type": "uuid",
+    "not_null": true,
+    "default_expr": "gen_random_uuid()"
+  },
+  {
+    "table_name": "cfy_menu_staff",
+    "column_name": "client_id",
+    "data_type": "uuid",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_staff",
+    "column_name": "code",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_staff",
+    "column_name": "name",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_staff",
+    "column_name": "role",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_staff",
+    "column_name": "pin_hash",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_staff",
+    "column_name": "enabled",
+    "data_type": "boolean",
+    "not_null": true,
+    "default_expr": "true"
+  },
+  {
+    "table_name": "cfy_menu_staff",
+    "column_name": "shift_state",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "'offline'::text"
+  },
+  {
+    "table_name": "cfy_menu_staff",
+    "column_name": "last_assigned_at",
+    "data_type": "timestamp with time zone",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_staff",
+    "column_name": "failed_attempts",
+    "data_type": "integer",
+    "not_null": true,
+    "default_expr": "0"
+  },
+  {
+    "table_name": "cfy_menu_staff",
+    "column_name": "blocked_until",
+    "data_type": "timestamp with time zone",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "cfy_menu_staff",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "not_null": true,
+    "default_expr": "now()"
+  },
+  {
+    "table_name": "cfy_menu_staff",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "not_null": true,
+    "default_expr": "now()"
+  },
+  {
+    "table_name": "cfy_menu_staff",
+    "column_name": "phone",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": "''::text"
+  },
+  {
+    "table_name": "clients",
+    "column_name": "id",
+    "data_type": "uuid",
+    "not_null": true,
+    "default_expr": "gen_random_uuid()"
+  },
+  {
+    "table_name": "clients",
+    "column_name": "code",
+    "data_type": "text",
+    "not_null": true,
+    "default_expr": null
+  },
+  {
+    "table_name": "clients",
+    "column_name": "name_ar",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "clients",
+    "column_name": "name_en",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "clients",
+    "column_name": "brand_type",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "clients",
+    "column_name": "phone",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "clients",
+    "column_name": "tier",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": "'start'::text"
+  },
+  {
+    "table_name": "clients",
+    "column_name": "status",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": "'active'::text"
+  },
+  {
+    "table_name": "clients",
+    "column_name": "sub_start",
+    "data_type": "date",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "clients",
+    "column_name": "sub_end",
+    "data_type": "date",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "clients",
+    "column_name": "tag",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "clients",
+    "column_name": "facebook",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "clients",
+    "column_name": "instagram",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "clients",
+    "column_name": "tiktok",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "clients",
+    "column_name": "whatsapp",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "clients",
+    "column_name": "instapay",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "clients",
+    "column_name": "vodafone_cash",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "clients",
+    "column_name": "map_link",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "clients",
+    "column_name": "website",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "clients",
+    "column_name": "notes",
+    "data_type": "text",
+    "not_null": false,
+    "default_expr": null
+  },
+  {
+    "table_name": "clients",
+    "column_name": "menu_cats",
+    "data_type": "jsonb",
+    "not_null": false,
+    "default_expr": "'[]'::jsonb"
+  },
+  {
+    "table_name": "clients",
+    "column_name": "menu_items",
+    "data_type": "jsonb",
+    "not_null": false,
+    "default_expr": "'[]'::jsonb"
+  },
+  {
+    "table_name": "clients",
+    "column_name": "gallery",
+    "data_type": "jsonb",
+    "not_null": false,
+    "default_expr": "'[]'::jsonb"
+  },
+  {
+    "table_name": "clients",
+    "column_name": "design",
+    "data_type": "jsonb",
+    "not_null": false,
+    "default_expr": "'{}'::jsonb"
+  },
+  {
+    "table_name": "clients",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "not_null": false,
+    "default_expr": "now()"
+  },
+  {
+    "table_name": "clients",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "not_null": false,
+    "default_expr": "now()"
+  },
+  {
+    "table_name": "clients",
+    "column_name": "active",
+    "data_type": "boolean",
+    "not_null": false,
+    "default_expr": "true"
+  },
+  {
+    "table_name": "clients",
+    "column_name": "card",
+    "data_type": "jsonb",
+    "not_null": false,
+    "default_expr": "'{}'::jsonb"
+  }
+]

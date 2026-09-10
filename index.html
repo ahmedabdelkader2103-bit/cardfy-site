@@ -45,7 +45,26 @@ function fontCss(v){ const f=FONTS.find(f=>f.v===v); return f?f.css:"'Tajawal',s
 const FULL_WIDTH_TILES=['vodafone','map','menu','gallery'];
 function defaultTileStyle(key){ return FULL_WIDTH_TILES.includes(key) ? 'wide' : 'square'; }
 const TILE_ICONS={whatsapp:'💬',instagram:'📸',facebook:'ƒ',tiktok:'🎵',instapay:'💳',vodafone:'📱',map:'📍',website:'🌐',menu:'🍽️',gallery:'🖼️',custom:'🔗'};
-function normUrl(val){ if(!val) return '#'; if(/^https?:/.test(val)) return val; if(/^(wa\.me|t\.me|telegram\.me)/.test(val)) return 'https://'+val; return 'https://'+val.replace(/^\/+/,''); }
+function escapeHtml(value){ return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+function normUrl(value){
+  const val=String(value||'').trim();
+  if(!val || /[\u0000-\u001f\u007f]/.test(val)) return '#';
+  if(/^[a-z][a-z0-9+.-]*:/i.test(val) && !/^https?:\/\//i.test(val)) return '#';
+  try{ const url=new URL(/^https?:\/\//i.test(val)?val:'https://'+val.replace(/^\/+/,'')); return ['https:','http:'].includes(url.protocol)?url.href:'#'; }catch(e){ return '#'; }
+}
+function imageUrl(value){
+  const val=String(value||'').trim();
+  if(!val || /[\u0000-\u001f\u007f]/.test(val)) return '';
+  if(/^data:image\/(?:png|jpe?g|webp|gif|svg\+xml);(?:base64,|charset=[^,]+,)/i.test(val)) return val;
+  try{ const url=new URL(val,location.href); return ['https:','http:'].includes(url.protocol)?url.href:''; }catch(e){ return ''; }
+}
+function designColor(value,fallback){
+  const val=String(value||'').trim();
+  if(!/^(?:#[0-9a-f]{3,8}|[a-z]+|(?:rgb|hsl)a?\([0-9.,%+\-\s]+\))$/i.test(val)) return fallback;
+  const probe=document.createElement('span'); probe.style.color=val;
+  return probe.style.color?val:fallback;
+}
+function tileStyle(value,key){return ['wide','square','compact','icon'].includes(value)?value:defaultTileStyle(key);}
 function shade(hex,percent){
   try{
     const n=hex.replace('#',''); const num=parseInt(n,16);
@@ -75,7 +94,7 @@ function buildExpiredHTML(c){
   return `<div style="background:#12131c;color:#fff;font-family:'Tajawal',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center">
 <div style="width:74px;height:74px;border-radius:50%;background:#241a22;color:#ff5c7a;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:22px">⏳</div>
 <h1 style="font-size:20px;margin-bottom:10px">انتهى اشتراك هذه الصفحة</h1>
-<p style="color:#9aa0b4;font-size:14px;max-width:320px;line-height:1.8;margin-bottom:26px">صفحة <b style="color:#fff">${c.nameAr||''}</b> على Cardfy مش متاحة حاليًا لحد ما يتم تجديد الاشتراك. لتجديد الاشتراك والتواصل معنا:</p>
+<p style="color:#9aa0b4;font-size:14px;max-width:320px;line-height:1.8;margin-bottom:26px">صفحة <b style="color:#fff">${escapeHtml(c.nameAr||'')}</b> على Cardfy مش متاحة حاليًا لحد ما يتم تجديد الاشتراك. لتجديد الاشتراك والتواصل معنا:</p>
 <a href="${waHref}" target="_blank" rel="noopener" style="background:#25d366;color:#fff;text-decoration:none;font-weight:800;padding:13px 30px;border-radius:14px;font-size:14.5px;display:inline-flex;align-items:center;gap:8px">💬 تجديد الاشتراك عبر واتساب</a>
 <div style="margin-top:34px;font-size:11px;color:#565c73">powered by <b>cardfy.space</b></div>
 </div>`;
@@ -91,14 +110,19 @@ function buildNotFoundHTML(){
 }
 
 function buildClientBody(c,d,opts){
+  // Validate design values before using them in generated CSS or attributes.
+  d={...d,bg1:designColor(d.bg1,'#FFF6EC'),bg2:designColor(d.bg2,'#6d4df6'),
+    fontColor:designColor(d.fontColor,''),wallpaper:imageUrl(d.wallpaper),logo:imageUrl(d.logo)};
+
   const isExpired = !(opts&&opts.preview) && statusOf(c)==='expired';
   if(isExpired) return {body: buildExpiredHTML(c), style:''};
-  const cols=d.columns||2;
+  const cols=[1,2,3].includes(Number(d.columns))?Number(d.columns):2;
   const galMode=d.galMode||'grid3';
   const tiles=(d.tiles||[]).filter(t=>t.on && t.key!=='menu').map(t=>{
     const icon=TILE_ICONS[t.key]||'🔗';
-    const style=t.style||defaultTileStyle(t.key);
-    const g=`background:linear-gradient(145deg, ${t.color}, ${shade(t.color,-0.18)})`;
+    const style=tileStyle(t.style,t.key);
+    const color=designColor(t.color,'#6d4df6');
+    const g=`background:linear-gradient(145deg, ${color}, ${shade(color,-0.18)})`;
     if(t.key==='menu'){
       const cats=(c.menuCats||[]).filter(cat=>cat.on!==false);
       const itemsOf=cid=>(c.menuItems||[]).filter(it=>it.catId===cid && it.on!==false);
@@ -106,32 +130,32 @@ function buildClientBody(c,d,opts){
         const its=itemsOf(cat.id);
         const rows = its.length ? its.map(it=>`
           <div class="c-mi">
-            ${it.image?`<img src="${it.image}">`:''}
-            <div class="c-mi-txt"><div class="c-mi-name">${it.name||''}</div>${it.desc?`<div class="c-mi-desc">${it.desc}</div>`:''}</div>
-            <div class="c-mi-price">${it.price||''}</div>
+            ${it.image?`<img src="${escapeHtml(imageUrl(it.image))}">`:''}
+            <div class="c-mi-txt"><div class="c-mi-name">${escapeHtml(it.name||'')}</div>${it.desc?`<div class="c-mi-desc">${escapeHtml(it.desc)}</div>`:''}</div>
+            <div class="c-mi-price">${escapeHtml(it.price||'')}</div>
           </div>`).join('') : `<div class="c-menu-row" style="opacity:.55">لسه مفيش أصناف</div>`;
-        return `<div class="c-mcat"><div class="c-mcat-name">${cat.name}</div>${rows}</div>`;
+        return `<div class="c-mcat"><div class="c-mcat-name">${escapeHtml(cat.name)}</div>${rows}</div>`;
       }).join('') : `<div class="c-menu-row" style="opacity:.6">لسه مفيش أصناف مضافة</div>`;
-      return `<details class="c-block"><summary style="${g}"><span class="c-block-ic">${icon}</span>${t.label||'قائمة الأسعار'}</summary><div class="c-block-body">${body}</div></details>`;
+      return `<details class="c-block"><summary style="${g}"><span class="c-block-ic">${icon}</span>${escapeHtml(t.label||'قائمة الأسعار')}</summary><div class="c-block-body">${body}</div></details>`;
     }
     if(t.key==='gallery'){
-      const style=t.style||defaultTileStyle(t.key);
+      const style=tileStyle(t.style,t.key);
       const count=(c.gallery||[]).length;
-      return `<button type="button" class="c-tile style-${style}" style="${g};border:0;cursor:pointer;font-family:inherit" onclick="cOpenGallery()"><span class="c-tile-ic">${icon}</span>${style==='icon'?'':`<span>${t.label||'معرض الصور'}${count?` (${count})`:''}</span>`}</button>`;
+      return `<button type="button" class="c-tile style-${style}" style="${g};border:0;cursor:pointer;font-family:inherit" onclick="cOpenGallery()"><span class="c-tile-ic">${icon}</span>${style==='icon'?'':`<span>${escapeHtml(t.label||'معرض الصور')}${count?` (${count})`:''}</span>`}</button>`;
     }
     if(t.key==='vodafone'){
       const num=(c.voda||'').trim();
-      const style=t.style||defaultTileStyle(t.key);
-      return `<button type="button" class="c-tile style-${style}" style="${g};border:0;cursor:pointer;font-family:inherit" onclick="cCopyText(this,'${num.replace(/'/g,"\\'")}')"><span class="c-tile-ic">${icon}</span>${style==='icon'?'':`<span>${t.label||''}</span>`}</button>`;
+      const style=tileStyle(t.style,t.key);
+      return `<button type="button" class="c-tile style-${style}" style="${g};border:0;cursor:pointer;font-family:inherit" data-copy-text="${escapeHtml(num)}" onclick="cCopyText(this,this.dataset.copyText)"><span class="c-tile-ic">${icon}</span>${style==='icon'?'':`<span>${escapeHtml(t.label||'')}</span>`}</button>`;
     }
     if(t.key==='instapay'){
       const val=(c.insta||'').trim();
       const looksLikeLink = /^https?:\/\//i.test(val) || val.includes('.');
-      const style=t.style||defaultTileStyle(t.key);
+      const style=tileStyle(t.style,t.key);
       if(looksLikeLink){
-        return `<a class="c-tile style-${style}" href="${normUrl(val)}" target="_blank" rel="noopener" style="${g}"><span class="c-tile-ic">${icon}</span>${style==='icon'?'':`<span>${t.label||''}</span>`}</a>`;
+        return `<a class="c-tile style-${style}" href="${escapeHtml(normUrl(val))}" target="_blank" rel="noopener" style="${g}"><span class="c-tile-ic">${icon}</span>${style==='icon'?'':`<span>${escapeHtml(t.label||'')}</span>`}</a>`;
       }
-      return `<button type="button" class="c-tile style-${style}" style="${g};border:0;cursor:pointer;font-family:inherit" onclick="cCopyText(this,'${val.replace(/'/g,"\\'")}')"><span class="c-tile-ic">${icon}</span>${style==='icon'?'':`<span>${t.label||''}</span>`}</button>`;
+      return `<button type="button" class="c-tile style-${style}" style="${g};border:0;cursor:pointer;font-family:inherit" data-copy-text="${escapeHtml(val)}" onclick="cCopyText(this,this.dataset.copyText)"><span class="c-tile-ic">${icon}</span>${style==='icon'?'':`<span>${escapeHtml(t.label||'')}</span>`}</button>`;
     }
     let href='#';
     if(t.key==='whatsapp') href='https://wa.me/'+(c.phone||'').replace(/\D/g,'');
@@ -141,13 +165,13 @@ function buildClientBody(c,d,opts){
     else if(t.key==='map') href=normUrl(c.map);
     else if(t.key==='website') href=normUrl(c.website);
     else if(t.key==='custom') href=normUrl(t.value||'');
-    return `<a class="c-tile style-${style}" href="${href}" target="_blank" rel="noopener" style="${g}"><span class="c-tile-ic">${icon}</span>${style==='icon'?'':`<span>${t.label||''}</span>`}</a>`;
+    return `<a class="c-tile style-${style}" href="${escapeHtml(href)}" target="_blank" rel="noopener" style="${g}"><span class="c-tile-ic">${icon}</span>${style==='icon'?'':`<span>${escapeHtml(t.label||'')}</span>`}</a>`;
   }).join('');
   const isImgBg = d.bg==='image' && d.wallpaper;
   const isDark = DARK_BGS.includes(d.bg) || isImgBg;
   const bg = d.bg==='solid'?`background:${d.bg1}`
     : d.bg==='gradient'?`background:linear-gradient(135deg,${d.bg1},${d.bg2})`
-    : isImgBg?`background-image:linear-gradient(rgba(6,8,16,${(d.overlay==null?30:d.overlay)/100}),rgba(6,8,16,${(d.overlay==null?30:d.overlay)/100})),url('${d.wallpaper}');background-size:cover;background-position:center;background-attachment:scroll`
+    : isImgBg?`background-image:linear-gradient(rgba(6,8,16,${Math.max(0,Math.min(100,Number(d.overlay??30)||0))/100}),rgba(6,8,16,${Math.max(0,Math.min(100,Number(d.overlay??30)||0))/100})),url(${JSON.stringify(d.wallpaper)});background-size:cover;background-position:center;background-attachment:scroll`
     : `background:${BG_SOLIDS[d.bg]||'#FFF6EC'}`;
   const text=d.fontColor||(isDark?'#fff':'#2B1B22'), sub=d.fontColor?(d.fontColor+'aa'):(isDark?'rgba(255,255,255,.72)':'rgba(0,0,0,.55)');
   const fs=Number(d.fontSize)||16;
@@ -155,8 +179,8 @@ function buildClientBody(c,d,opts){
   const decor = (d.decor!==false && !isImgBg) ? `background-image:radial-gradient(circle at 10% 6%, #ffffff88, transparent 40%), radial-gradient(circle at 92% 12%, #1FB6A855, transparent 42%), radial-gradient(circle at 88% 92%, #A6538C40, transparent 40%);` : '';
   const nameFont = fontCss(d.nameFont), bodyFont = fontCss(d.bodyFont);
   const logoHtml = d.logo
-    ? `<img class="c-logo" src="${d.logo}" onerror="this.style.display='none'">`
-    : `<div class="c-logo-fb">${d.logoTxt||(c.nameAr||'C').slice(0,2)}</div>`;
+    ? `<img class="c-logo" src="${escapeHtml(d.logo)}" onerror="this.style.display='none'">`
+    : `<div class="c-logo-fb">${escapeHtml(d.logoTxt||(c.nameAr||'C').slice(0,2))}</div>`;
 
   const style = `
 *{box-sizing:border-box;margin:0;padding:0}
@@ -220,8 +244,8 @@ body{${bg};${decor};color:${text};font-family:${bodyFont};font-size:${fs}px;min-
 .c-foot{font-size:10px;color:${sub};text-align:center;margin-top:20px;padding-top:10px}
 `;
   const body = `${logoHtml}
-<div class="c-names"><div class="ar">${c.nameAr||''}</div>${c.nameEn?`<div class="en">${c.nameEn}</div>`:''}</div>
-${c.tag?`<div class="c-tag">${c.tag}</div>`:''}
+<div class="c-names"><div class="ar">${escapeHtml(c.nameAr||'')}</div>${c.nameEn?`<div class="en">${escapeHtml(c.nameEn)}</div>`:''}</div>
+${c.tag?`<div class="c-tag">${escapeHtml(c.tag)}</div>`:''}
 <div class="c-tiles" onclick="cTrack(event)">${tiles}</div>
 <div class="c-foot">powered by <b>cardfy.space</b></div>
 <div class="c-lightbox" id="cLb">
@@ -239,7 +263,7 @@ ${c.tag?`<div class="c-tag">${c.tag}</div>`:''}
   </div>
   <div class="c-galpage-grid" id="cGalPageGrid"></div>
 </div>`;
-  window.cGalImgs = (c.gallery||[]).map(g=>({src:g.src||g,caption:g.caption||''}));
+  window.cGalImgs = (c.gallery||[]).map(g=>({src:imageUrl(g.src||g),caption:g.caption||''}));
   return {body, style};
 }
 
@@ -271,7 +295,7 @@ function cLbClose(){ document.getElementById('cLb').classList.remove('show'); }
 function cOpenGallery(){
   const host=document.getElementById('cGalPageGrid');
   host.innerHTML = window.cGalImgs.length
-    ? window.cGalImgs.map((g,gi)=>`<div class="c-gal-item" onclick="cLightbox(${gi})"><img src="${g.src}">${g.caption?`<span>${g.caption}</span>`:''}</div>`).join('')
+    ? window.cGalImgs.map((g,gi)=>`<div class="c-gal-item" onclick="cLightbox(${gi})"><img src="${escapeHtml(imageUrl(g.src))}">${g.caption?`<span>${escapeHtml(g.caption)}</span>`:''}</div>`).join('')
     : '<div style="grid-column:1/-1;text-align:center;color:#888;padding:30px 0">لسه مفيش صور مضافة</div>';
   document.getElementById('cGalPage').classList.add('show');
   cfyTrack('gallery_open');
