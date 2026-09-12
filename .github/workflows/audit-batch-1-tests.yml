@@ -1,4 +1,4 @@
-name: Audit Batch 1 Regression Tests
+name: CARDfy Restaurant OS Regression Tests
 
 on:
   pull_request:
@@ -6,6 +6,8 @@ on:
       - 'index.html'
       - 'client-dashboard.html'
       - 'dashboard/menu/**'
+      - 'restaurant/**'
+      - 'menu/**'
       - 'supabase/migrations/**'
       - 'tests/**'
       - 'package*.json'

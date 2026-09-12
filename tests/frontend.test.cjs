@@ -83,7 +83,7 @@ test('Client home escapes identity fields and preserves enabled-service navigati
   assert.equal(w.document.querySelector('h1').textContent,attack);
   assert.equal(w.document.querySelector('#attack'),null);
   assert.equal(w.document.querySelectorAll('.service').length,1);
-  assert.equal(w.document.querySelector('.service').getAttribute('href'),'/dashboard/menu/');
+  assert.equal(w.document.querySelector('.service').getAttribute('href'),'/restaurant/');
   w.loginUI(attack);assert.equal(w.document.querySelector('#err').textContent,attack);
   dom.window.close();
 });
@@ -137,7 +137,7 @@ test('All tracked frontend JavaScript and inline scripts parse',()=>{
   const {execFileSync}=require('node:child_process');
   const files=execFileSync('git',['ls-files'],{cwd:root,encoding:'utf8'}).trim().split(/\r?\n/);
   for(const file of files){
-    if(file.endsWith('.js'))assert.doesNotThrow(()=>new Function(read(file)),file);
+    if(file.endsWith('.js'))assert.doesNotThrow(()=>file.startsWith('restaurant/')?execFileSync(process.execPath,['--check',file],{cwd:root}):new Function(read(file)),file);
     if(file.endsWith('.html'))for(const script of scripts(read(file)))assert.doesNotThrow(()=>new Function(script),file);
   }
 });

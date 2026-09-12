@@ -14,7 +14,7 @@ const SUPA_URL='https://ytixcczbjmjnuotzavbb.supabase.co';
 const SUPA_KEY='sb_publishable_0j9jf0boDrMGGO8S6mw-4Q_5bOeHIuU';
 const sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 const TOKEN_KEY='cardfy_client_token_v1';
-const SERVICES={social:['Social Link','/dashboard/social/'],menu:['Professional Menu','/dashboard/menu/'],shop:['Professional Shop','/dashboard/shop/'],booking:['Professional Booking','/dashboard/booking/']};
+const SERVICES={social:['Social Link','/dashboard/social/'],menu:['Restaurant OS','/restaurant/'],shop:['Professional Shop','/dashboard/shop/'],booking:['Professional Booking','/dashboard/booking/']};
 const app=document.getElementById('app');
 const adminMode=new URLSearchParams(location.search).get('admin')==='1';
 function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}

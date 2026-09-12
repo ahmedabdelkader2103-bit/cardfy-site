@@ -1,5 +1,5 @@
 {
-  "name": "cardfy-audit-regression-tests",
+  "name": "cardfy-restaurant-os-regression-tests",
   "private": true,
   "scripts": {
     "test": "node --test tests/*.test.cjs"
