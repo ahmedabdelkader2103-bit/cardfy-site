@@ -1,5 +1,5 @@
 const test=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const path=require('node:path');const {PGlite}=require('@electric-sql/pglite');const {pgcrypto}=require('@electric-sql/pglite/contrib/pgcrypto');
-const migration=['20260912130332_restaurant_os_master.sql','20260912183500_restaurant_os_fk_indexes.sql','20260912184500_restaurant_os_compatibility.sql'].map(file=>fs.readFileSync(path.join(__dirname,'..','supabase','migrations',file),'utf8')).join('\n');
+const migration=['20260912130332_restaurant_os_master.sql','20260912183500_restaurant_os_fk_indexes.sql','20260912184500_restaurant_os_compatibility.sql','20260912214500_restaurant_os_trigger_privileges.sql'].map(file=>fs.readFileSync(path.join(__dirname,'..','supabase','migrations',file),'utf8')).join('\n');
 const owner='11111111-1111-4111-8111-111111111111';
 const baseline=`
 create schema if not exists extensions;create extension pgcrypto with schema extensions;create role anon;create role authenticated;
@@ -34,6 +34,9 @@ create function cfy_menu_staff_order_action(text,uuid,text,jsonb) returns jsonb 
 create function cfy_menu_staff_table_action(text,uuid,text) returns jsonb language sql as $$select '{}'::jsonb$$;
 create function cfy_menu_public_feedback(text,text,integer,text) returns boolean language sql as $$select true$$;
 create function cfy_menu_public_feedback_detailed(text,text,integer,integer,integer,integer,text) returns boolean language sql as $$select true$$;
+create function cfy_delete_legacy_client() returns trigger language plpgsql security definer as $$begin return old;end$$;
+create function cfy_sync_core_to_legacy() returns trigger language plpgsql security definer as $$begin return new;end$$;
+create function cfy_sync_social_to_legacy() returns trigger language plpgsql security definer as $$begin return new;end$$;
 insert into cfy_clients(id,code,brand_name_ar) values('${owner}','DEMO','مطعم تجريبي');insert into cfy_client_services values('${owner}','menu',true);
 `;
 test('Restaurant OS migration applies atomically and core secured flows execute',async()=>{const db=new PGlite({extensions:{pgcrypto}});await db.exec(baseline);await db.exec('begin');await db.exec(migration);await db.exec('commit');
@@ -41,7 +44,8 @@ test('Restaurant OS migration applies atomically and core secured flows execute'
  const phone=await db.query("select cfy_os_phone('01012345678') value");assert.equal(phone.rows[0].value,'+201012345678');
  const session=await db.query("select cfy_os_session('1234567890123456')->>'role' role");assert.equal(session.rows[0].role,'owner');
  const inventory=await db.query("select cfy_os_finance_mutate('1234567890123456','inventory','save',jsonb_build_object('name','دقيق','unit','kg','quantity',10,'unit_price',40,'minimum_quantity',2)) item");assert.equal(inventory.rows[0].item.name,'دقيق');
- const denied=await db.query("select has_function_privilege('anon','cfy_os_require(text,text)','EXECUTE') ok");assert.equal(denied.rows[0].ok,false);await db.close();});
+ const denied=await db.query("select has_function_privilege('anon','cfy_os_require(text,text)','EXECUTE') ok");assert.equal(denied.rows[0].ok,false);
+ for(const fn of ['cfy_delete_legacy_client()','cfy_sync_core_to_legacy()','cfy_sync_social_to_legacy()']){const privilege=await db.query("select has_function_privilege('anon',$1,'EXECUTE') ok",[fn]);assert.equal(privilege.rows[0].ok,false)}await db.close();});
 
 test('Driver fallback, customer confirmation and page permissions are enforced',async()=>{const db=new PGlite({extensions:{pgcrypto}});await db.exec(baseline);await db.exec(migration);const driver='22222222-2222-4222-8222-222222222222',order='33333333-3333-4333-8333-333333333333',token='driver-session-token-123456',tracking='tracking-token-123456';
  await db.query("insert into cfy_menu_staff(id,client_id,code,name,role,pin_hash,enabled) values($1,$2,'DRV','Driver','delivery','x',true)",[driver,owner]);await db.query("insert into cfy_menu_staff_sessions(staff_id,client_id,token_hash,expires_at) values($1,$2,encode(extensions.digest($3,'sha256'),'hex'),now()+interval '1 day')",[driver,owner,token]);
