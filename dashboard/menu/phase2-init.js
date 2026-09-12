@@ -27,7 +27,7 @@ function markPhase2(){
   const sub=document.querySelector('.topbar .muted');if(sub)sub.innerHTML=`<span id="clientCode">${state.session?.client?.code||''}</span> · Owner Console`;
 }
 function installOwnerNav(){
-  const routes={orders:'/dashboard/menu/orders.html',pos:'/dashboard/menu/pos.html',analytics:'/dashboard/menu/analytics.html',settings:'/dashboard/menu/settings.html'};
+  const routes={orders:'/restaurant/?page=prep',pos:'/restaurant/?page=takeaway',analytics:'/restaurant/?page=analytics',settings:'/restaurant/?page=settings'};
   const labels={orders:'Live',pos:'Live',analytics:'Live',settings:'Live',tools:'نشط'};
   document.querySelectorAll('.nav button[data-section]').forEach(btn=>{
     const section=btn.dataset.section,tag=btn.querySelector('.tag');if(tag&&labels[section])tag.textContent=labels[section];

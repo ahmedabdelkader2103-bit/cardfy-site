@@ -7,6 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="/dashboard/menu/menu.css">
 <link rel="stylesheet" href="/dashboard/menu/menu-layouts.css">
+<link rel="stylesheet" href="/dashboard/menu/catalog.css">
 </head>
 <body>
 <div id="appLoading" class="loading">جاري تحميل Professional Menu...</div>
@@ -16,11 +17,11 @@
       <div class="brand">CARDfy<small>Professional Menu</small></div>
       <div id="restaurantChip" class="restaurant-chip"></div>
       <nav class="nav">
-        <button data-section="orders" data-message="Orders Dashboard سيتم تنفيذه في Phase 5"><span>الطلبات</span><span class="tag">Phase 5</span></button>
-        <button data-section="pos" data-message="POS سيتم تنفيذه في Phase 7"><span>POS</span><span class="tag">Phase 7</span></button>
+        <button data-section="orders"><span>الطلبات</span><span class="tag">Live</span></button>
+        <button data-section="pos"><span>POS</span><span class="tag">Live</span></button>
         <button data-section="tools" class="active"><span>Tools</span><span class="tag">نشط</span></button>
-        <button data-section="analytics" data-message="Analytics سيتم تنفيذها في Phase 8"><span>Analytics</span><span class="tag">Phase 8</span></button>
-        <button data-section="settings" data-message="Settings الموسعة سيتم تنفيذها في Phase 8"><span>الإعدادات</span><span class="tag">Phase 8</span></button>
+        <button data-section="analytics"><span>Analytics</span><span class="tag">Live</span></button>
+        <button data-section="settings"><span>الإعدادات</span><span class="tag">Live</span></button>
       </nav>
       <div class="sidebar-foot"><a class="back" href="/client-dashboard.html">رجوع إلى خدماتي</a></div>
     </aside>
@@ -33,7 +34,7 @@
         </div>
         <div class="top-actions">
           <span id="adminBadge" class="badge admin" hidden></span>
-          <span class="badge">Phase 1</span>
+          <span class="badge">Restaurant OS</span>
         </div>
       </div>
 
@@ -96,10 +97,10 @@
               <div class="save-row"><button id="saveAppearance" class="btn">حفظ شكل المنيو</button><div id="appearanceStatus" class="status"></div></div>
             </div>
 
-            <div class="panel" data-panel="catalog"><div class="coming"><b>الأقسام والمنتجات — Phase 2</b><p>الهيكل ظاهر الآن للحفاظ على Information Architecture المعتمدة. CRUD الكامل، الصور، Duplicate، Variants وترتيب العناصر سيُنفذ في Phase 2.</p></div></div>
-            <div class="panel" data-panel="addons"><div class="coming"><b>الإضافات الديناميكية — Phase 2</b><p>Reusable option groups وMin/Max وSingle/Multi ستُنفذ في مرحلة Catalog Management.</p></div></div>
-            <div class="panel" data-panel="offers"><div class="coming"><b>العروض والكوبونات — Phase 4</b><p>الـBackend foundation موجود، لكن واجهة التسعير والعروض ستدخل مع Pricing + Offers + Cart.</p></div></div>
-            <div class="panel" data-panel="delivery"><div class="coming"><b>التوصيل والطلبات — Phases 4–5</b><p>Delivery Zones وScheduled Orders والـCheckout validation ستُستكمل قبل إطلاق الطلبات العامة.</p></div></div>
+            <div class="panel" data-panel="catalog"><div class="coming"><b>الأقسام والمنتجات</b><p>جارٍ تحميل أدوات إدارة الكتالوج.</p></div></div>
+            <div class="panel" data-panel="addons"><div class="coming"><b>الإضافات الديناميكية</b><p>جارٍ تحميل مجموعات الاختيارات والإضافات.</p></div></div>
+            <div class="panel" data-panel="offers"><div class="coming"><b>العروض والكوبونات</b><p>جارٍ تحميل أدوات التسعير والعروض.</p></div></div>
+            <div class="panel" data-panel="delivery"><div class="coming"><b>التوصيل والطلبات</b><p>جارٍ تحميل مناطق التوصيل وإعدادات الطلبات.</p></div></div>
 
             <div class="panel" data-panel="preview">
               <div class="section-title"><div><h3>معاينة المنيو</h3><div class="muted">Preview Foundation — لا تغيّر الـPublic QR الحالي.</div></div><button id="refreshPreview" class="btn secondary">تحديث من المحفوظ</button></div>
@@ -117,7 +118,7 @@
                   </div>
                 </div>
               </div>
-              <div class="phase-note">الـPublic Professional Menu الحقيقي سيتم تفعيله في Phase 3 بعد بناء Customer Menu، لذلك لا يوجد أي Traffic Switch أو تغيير للـQR في هذه المرحلة.</div>
+              <div class="phase-note">المعاينة تستخدم نفس بيانات الـProfessional Menu العامة، مع بقاء روابط QR الحالية فعالة.</div>
             </div>
           </div>
         </section>
@@ -130,7 +131,7 @@
           </div>
           <div class="card" style="margin-top:16px">
             <h3>حالة المرحلة</h3>
-            <p class="muted" style="font-size:12px;line-height:1.8">Phase 1 تبني Owner Dashboard + Tools Foundation فقط. الأقسام والمنتجات والطلبات العامة وPOS وAnalytics ليست مفعلة كوظائف نهائية في هذه المرحلة.</p>
+            <p class="muted" style="font-size:12px;line-height:1.8">أدوات المنيو والطلبات وPOS والتحليلات والإعدادات مرتبطة بمنظومة Restaurant OS الحالية.</p>
           </div>
         </aside>
       </div>
@@ -140,5 +141,7 @@
 <div id="toast" class="toast"></div>
 <script src="/dashboard/common/cardfy-assets.js"></script>
 <script src="/dashboard/menu/menu.js"></script>
+<script src="/dashboard/menu/catalog.js"></script>
+<script src="/dashboard/menu/phase2-init.js"></script>
 </body>
 </html>

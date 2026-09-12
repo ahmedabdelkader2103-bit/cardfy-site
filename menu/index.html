@@ -9,12 +9,14 @@
 <link rel="stylesheet" href="/menu/menu.css">
 <link rel="stylesheet" href="/menu/phase3-extra.css">
 <link rel="stylesheet" href="/menu/checkout.css">
+<link rel="stylesheet" href="/menu/master-public.css">
 <style>[hidden]{display:none!important}</style>
 </head>
 <body>
-<div id="loading" class="page-state">جاري تحميل المنيو...</div>
+<div id="loading" class="page-state master-loader"><div class="menu-book" aria-hidden="true"><i></i><i></i><i></i></div><b>جارٍ تحميل القائمة...</b><span>نجهّز لك أحدث الأصناف والأسعار</span></div>
 <div id="fatal" class="page-state error" hidden></div>
 <div id="app" hidden>
+  <nav class="public-top" aria-label="حساب العميل"><button id="myOrders" type="button">طلباتي</button><div class="public-brand"><b id="topRestaurantName">CARDfy</b><span id="topLogo">CF</span></div><button id="myAccount" type="button">حسابي</button></nav>
   <header class="hero">
     <div id="cover" class="cover"><div class="hero-shade"></div></div>
     <div class="restaurant-head">
@@ -71,9 +73,8 @@
 <div id="toast" class="toast"></div>
 <script src="/menu/menu.js"></script>
 <script src="/menu/public-state.js"></script>
+<script src="/menu/master-public.js"></script>
 <script src="/menu/checkout.js"></script>
 <script src="/menu/commerce-visuals.js"></script>
-<script src="/menu/payment-v1.js"></script>
-<script src="/menu/demo-checkout-support.js"></script>
 </body>
 </html>

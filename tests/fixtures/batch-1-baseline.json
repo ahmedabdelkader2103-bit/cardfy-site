@@ -1,0 +1,98 @@
+{
+  "note": "Read-only definitions captured from project ytixcczbjmjnuotzavbb for batch-1 regression tests. No customer data.",
+  "functions": {
+    "cfy_is_admin": "CREATE OR REPLACE FUNCTION public.cfy_is_admin()\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$ select exists(select 1 from public.cfy_admin_users a where a.user_id=auth.uid()) $function$\n",
+    "cfy_menu_finalize_created_order_v3": "CREATE OR REPLACE FUNCTION public.cfy_menu_finalize_created_order_v3(p_order_id uuid, p_order jsonb, p_result jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare v_order public.cfy_menu_orders%rowtype; v_method text; v_coupon public.cfy_menu_coupons%rowtype; v_result jsonb:=p_result; begin\n  select * into v_order from public.cfy_menu_orders where id=p_order_id for update;\n  if v_order.id is null then return v_result; end if;\n  v_method:=public.cfy_menu_resolve_payment_method(v_order.client_id,v_order.order_type,p_order->>'payment_method');\n  update public.cfy_menu_orders set payment_method=v_method where id=v_order.id;\n  if v_order.coupon_code is not null then\n    select * into v_coupon from public.cfy_menu_coupons where client_id=v_order.client_id and upper(code)=upper(v_order.coupon_code) limit 1;\n    if v_coupon.id is not null and v_coupon.discount_type='free_delivery' and v_order.order_type='delivery' then\n      update public.cfy_menu_orders set coupon_discount=delivery_fee,total=greatest(0,total-delivery_fee),updated_at=now() where id=v_order.id;\n    end if;\n  end if;\n  select * into v_order from public.cfy_menu_orders where id=p_order_id;\n  v_result:=v_result||jsonb_build_object('payment_method',v_order.payment_method,'payment_status',v_order.payment_status,'coupon_discount',v_order.coupon_discount,'delivery_fee',v_order.delivery_fee,'total',v_order.total);\n  return v_result;\nend $function$\n",
+    "cfy_menu_order_action_core": "CREATE OR REPLACE FUNCTION public.cfy_menu_order_action_core(p_client_id uuid, p_actor_type text, p_actor_id uuid, p_actor_role text, p_order_id uuid, p_action text, p_data jsonb DEFAULT '{}'::jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'extensions'\nAS $function$\ndeclare v_order public.cfy_menu_orders%rowtype; v_settings public.cfy_menu_settings%rowtype; v_driver public.cfy_menu_staff%rowtype; v_driver_id uuid; v_job_type text; begin\n  select * into v_order from public.cfy_menu_orders where id=p_order_id and client_id=p_client_id for update;\n  if v_order.id is null then raise exception 'order_not_found' using errcode='P0001'; end if;\n  select * into v_settings from public.cfy_menu_settings where client_id=p_client_id;\n  if p_actor_role<>'owner' then\n    if p_actor_role='coordinator' and p_action not in ('accept','ready','assign_driver','complete','cancel','issue','resolve_issue','reprint') then raise exception 'forbidden_action' using errcode='P0001'; end if;\n    if p_actor_role='cashier' and p_action not in ('accept','complete','cancel','issue','resolve_issue','reprint') then raise exception 'forbidden_action' using errcode='P0001'; end if;\n    if p_actor_role='delivery' and p_action not in ('picked_up','delivered','issue') then raise exception 'forbidden_action' using errcode='P0001'; end if;\n  end if;\n\n  case p_action\n    when 'accept' then\n      if v_order.status<>'new' then raise exception 'invalid_transition' using errcode='P0001'; end if;\n      update public.cfy_menu_orders set status='preparing',accepted_at=coalesce(accepted_at,now()),preparing_at=coalesce(preparing_at,now()),updated_at=now() where id=v_order.id;\n      insert into public.cfy_menu_order_events(order_id,client_id,event_type,actor_type,actor_id) values(v_order.id,p_client_id,'accepted',p_actor_type,p_actor_id),(v_order.id,p_client_id,'preparing',p_actor_type,p_actor_id);\n      if v_settings.kitchen_printer_enabled then insert into public.cfy_menu_print_jobs(client_id,order_id,job_type,status,copies,payload) values(p_client_id,v_order.id,'kitchen','pending',v_settings.print_copies,public.cfy_menu_order_payload(v_order.id)); end if;\n    when 'ready' then\n      if v_order.status<>'preparing' then raise exception 'invalid_transition' using errcode='P0001'; end if;\n      update public.cfy_menu_orders set status='ready',ready_at=coalesce(ready_at,now()),updated_at=now() where id=v_order.id;\n      insert into public.cfy_menu_order_events(order_id,client_id,event_type,actor_type,actor_id) values(v_order.id,p_client_id,'ready',p_actor_type,p_actor_id);\n    when 'assign_driver' then\n      if v_order.order_type<>'delivery' or v_order.status<>'ready' then raise exception 'invalid_transition' using errcode='P0001'; end if;\n      v_driver_id:=nullif(p_data->>'driver_id','')::uuid;\n      if v_driver_id is null then\n        select s.id into v_driver_id from public.cfy_menu_staff s where s.client_id=p_client_id and s.role='delivery' and s.enabled and s.shift_state='available'\n          order by (select count(*) from public.cfy_menu_delivery_assignments a where a.driver_id=s.id and a.status in ('assigned','picked_up')) asc,s.last_assigned_at nulls first,s.created_at limit 1;\n      end if;\n      select * into v_driver from public.cfy_menu_staff where id=v_driver_id and client_id=p_client_id and role='delivery' and enabled and shift_state='available';\n      if v_driver.id is null then raise exception 'driver_unavailable' using errcode='P0001'; end if;\n      update public.cfy_menu_delivery_assignments set status='cancelled',cancelled_at=now() where order_id=v_order.id and status in ('assigned','picked_up');\n      insert into public.cfy_menu_delivery_assignments(client_id,order_id,driver_id,status,assigned_by_type,assigned_by_id) values(p_client_id,v_order.id,v_driver.id,'assigned',p_actor_type,p_actor_id);\n      update public.cfy_menu_orders set assigned_driver_id=v_driver.id,updated_at=now() where id=v_order.id;\n      update public.cfy_menu_staff set last_assigned_at=now(),updated_at=now() where id=v_driver.id;\n      insert into public.cfy_menu_order_events(order_id,client_id,event_type,actor_type,actor_id,data) values(v_order.id,p_client_id,'driver_assigned',p_actor_type,p_actor_id,jsonb_build_object('driver_id',v_driver.id,'driver_name',v_driver.name));\n    when 'picked_up' then\n      if v_order.order_type<>'delivery' or v_order.status<>'ready' or v_order.assigned_driver_id is null then raise exception 'invalid_transition' using errcode='P0001'; end if;\n      if p_actor_role='delivery' and v_order.assigned_driver_id<>p_actor_id then raise exception 'not_assigned_driver' using errcode='P0001'; end if;\n      update public.cfy_menu_orders set status='on_the_way',picked_up_at=coalesce(picked_up_at,now()),updated_at=now() where id=v_order.id;\n      update public.cfy_menu_delivery_assignments set status='picked_up',picked_up_at=coalesce(picked_up_at,now()) where order_id=v_order.id and driver_id=v_order.assigned_driver_id and status='assigned';\n      insert into public.cfy_menu_order_events(order_id,client_id,event_type,actor_type,actor_id) values(v_order.id,p_client_id,'picked_up',p_actor_type,p_actor_id);\n    when 'delivered' then\n      if v_order.order_type<>'delivery' or v_order.status<>'on_the_way' or v_order.assigned_driver_id is null then raise exception 'invalid_transition' using errcode='P0001'; end if;\n      if p_actor_role='delivery' and v_order.assigned_driver_id<>p_actor_id then raise exception 'not_assigned_driver' using errcode='P0001'; end if;\n      if v_order.delivery_otp_hash is not null and encode(digest(coalesce(p_data->>'otp',''),'sha256'),'hex')<>v_order.delivery_otp_hash then raise exception 'invalid_otp' using errcode='P0001'; end if;\n      update public.cfy_menu_orders set status='delivered',delivered_at=coalesce(delivered_at,now()),payment_status=case when payment_method='cash' then 'paid' else payment_status end,paid_at=case when payment_method='cash' then coalesce(paid_at,now()) else paid_at end,updated_at=now() where id=v_order.id;\n      update public.cfy_menu_delivery_assignments set status='delivered',delivered_at=coalesce(delivered_at,now()) where order_id=v_order.id and driver_id=v_order.assigned_driver_id and status in ('assigned','picked_up');\n      insert into public.cfy_menu_order_events(order_id,client_id,event_type,actor_type,actor_id) values(v_order.id,p_client_id,'delivered',p_actor_type,p_actor_id);\n    when 'complete' then\n      if not ((v_order.order_type='delivery' and v_order.status='delivered') or (v_order.order_type in ('takeaway','dinein') and v_order.status='ready')) then raise exception 'invalid_transition' using errcode='P0001'; end if;\n      update public.cfy_menu_orders set status='completed',completed_at=coalesce(completed_at,now()),payment_status=case when order_type='takeaway' and payment_method='cash' then 'paid' else payment_status end,paid_at=case when order_type='takeaway' and payment_method='cash' then coalesce(paid_at,now()) else paid_at end,updated_at=now() where id=v_order.id;\n      insert into public.cfy_menu_order_events(order_id,client_id,event_type,actor_type,actor_id) values(v_order.id,p_client_id,'completed',p_actor_type,p_actor_id);\n    when 'cancel' then\n      if v_order.status in ('completed','delivered','cancelled') then raise exception 'invalid_transition' using errcode='P0001'; end if;\n      update public.cfy_menu_orders set status='cancelled',cancelled_at=coalesce(cancelled_at,now()),updated_at=now() where id=v_order.id;\n      update public.cfy_menu_delivery_assignments set status='cancelled',cancelled_at=now() where order_id=v_order.id and status in ('assigned','picked_up');\n      insert into public.cfy_menu_order_events(order_id,client_id,event_type,actor_type,actor_id,data) values(v_order.id,p_client_id,'cancelled',p_actor_type,p_actor_id,jsonb_build_object('reason',left(coalesce(p_data->>'reason',''),500)));\n    when 'issue' then\n      update public.cfy_menu_orders set issue_open=true,issue_text=left(coalesce(p_data->>'text',''),1000),updated_at=now() where id=v_order.id;\n      insert into public.cfy_menu_order_events(order_id,client_id,event_type,actor_type,actor_id,data) values(v_order.id,p_client_id,'issue_opened',p_actor_type,p_actor_id,jsonb_build_object('text',left(coalesce(p_data->>'text',''),1000)));\n    when 'resolve_issue' then\n      update public.cfy_menu_orders set issue_open=false,updated_at=now() where id=v_order.id;\n      insert into public.cfy_menu_order_events(order_id,client_id,event_type,actor_type,actor_id) values(v_order.id,p_client_id,'issue_resolved',p_actor_type,p_actor_id);\n    when 'reprint' then\n      v_job_type:=coalesce(p_data->>'job_type','cashier'); if v_job_type not in ('cashier','kitchen') then raise exception 'invalid_print_type' using errcode='P0001'; end if;\n      insert into public.cfy_menu_print_jobs(client_id,order_id,job_type,status,copies,payload) values(p_client_id,v_order.id,v_job_type,'pending',greatest(1,least(5,coalesce((p_data->>'copies')::int,v_settings.print_copies))),public.cfy_menu_order_payload(v_order.id));\n    else raise exception 'unsupported_action' using errcode='P0001';\n  end case;\n  return public.cfy_menu_order_payload(v_order.id);\nend\n$function$\n",
+    "cfy_menu_resolve_payment_method": "CREATE OR REPLACE FUNCTION public.cfy_menu_resolve_payment_method(p_client_id uuid, p_order_type text, p_requested text)\n RETURNS text\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare v_methods jsonb; v_method text:=nullif(trim(coalesce(p_requested,'')),''); begin\n  select payment_methods into v_methods from public.cfy_menu_settings where client_id=p_client_id;\n  v_methods:=coalesce(v_methods,'[\"cash\",\"card_at_venue\",\"pay_on_delivery\"]'::jsonb);\n  if v_method is null then\n    if p_order_type='delivery' and v_methods ? 'pay_on_delivery' then v_method:='pay_on_delivery';\n    elsif v_methods ? 'cash' then v_method:='cash';\n    elsif jsonb_array_length(v_methods)>0 then v_method:=v_methods->>0;\n    else v_method:='cash'; end if;\n  end if;\n  if not (v_methods ? v_method) then raise exception 'payment_method_disabled' using errcode='P0001'; end if;\n  if p_order_type='delivery' and v_method not in ('pay_on_delivery','cash') then raise exception 'invalid_payment_method_for_order' using errcode='P0001'; end if;\n  if p_order_type in ('takeaway','dinein') and v_method not in ('cash','card_at_venue') then raise exception 'invalid_payment_method_for_order' using errcode='P0001'; end if;\n  return v_method;\nend $function$\n",
+    "cfy_menu_create_order_v3": "CREATE OR REPLACE FUNCTION public.cfy_menu_create_order_v3(p_code text, p_order jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'extensions'\nAS $function$\ndeclare v_result jsonb; begin\n  v_result:=public.cfy_menu_create_order(p_code,p_order);\n  if coalesce((v_result->>'duplicate')::boolean,false) then return v_result; end if;\n  return public.cfy_menu_finalize_created_order_v3((v_result->>'id')::uuid,p_order,v_result);\nend $function$\n",
+    "cfy_menu_owner_create_order_v3": "CREATE OR REPLACE FUNCTION public.cfy_menu_owner_create_order_v3(p_token text, p_source text, p_order jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'extensions'\nAS $function$\ndeclare v_result jsonb; begin\n  v_result:=public.cfy_menu_owner_create_order(p_token,p_source,p_order);\n  return public.cfy_menu_finalize_created_order_v3((v_result->>'id')::uuid,p_order,v_result);\nend $function$\n",
+    "cfy_menu_staff_create_order_v3": "CREATE OR REPLACE FUNCTION public.cfy_menu_staff_create_order_v3(p_token text, p_source text, p_order jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'extensions'\nAS $function$\ndeclare v_result jsonb; begin\n  v_result:=public.cfy_menu_staff_create_order(p_token,p_source,p_order);\n  return public.cfy_menu_finalize_created_order_v3((v_result->>'id')::uuid,p_order,v_result);\nend $function$\n"
+  },
+  "policies": [
+    {
+      "cmd": "SELECT",
+      "qual": "true",
+      "roles": [
+        "public"
+      ],
+      "tablename": "app_settings",
+      "permissive": "PERMISSIVE",
+      "policyname": "allow all read settings",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "app_settings",
+      "permissive": "PERMISSIVE",
+      "policyname": "authenticated can insert settings",
+      "schemaname": "public",
+      "with_check": "(auth.role() = 'authenticated'::text)"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(auth.role() = 'authenticated'::text)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "app_settings",
+      "permissive": "PERMISSIVE",
+      "policyname": "authenticated can update settings",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "true",
+      "roles": [
+        "public"
+      ],
+      "tablename": "clients",
+      "permissive": "PERMISSIVE",
+      "policyname": "allow all read clients",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "(auth.role() = 'authenticated'::text)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "clients",
+      "permissive": "PERMISSIVE",
+      "policyname": "authenticated can delete clients",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "clients",
+      "permissive": "PERMISSIVE",
+      "policyname": "authenticated can insert clients",
+      "schemaname": "public",
+      "with_check": "(auth.role() = 'authenticated'::text)"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(auth.role() = 'authenticated'::text)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "clients",
+      "permissive": "PERMISSIVE",
+      "policyname": "authenticated can update clients",
+      "schemaname": "public",
+      "with_check": null
+    }
+  ]
+}
