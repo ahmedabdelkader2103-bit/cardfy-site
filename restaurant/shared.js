@@ -17,6 +17,13 @@ export async function boot(page){
   const candidates=preferStaff?[staffToken,ownerToken]:[ownerToken,staffToken];
   for(const token of candidates.filter(Boolean)){try{context=await rpc('cfy_os_session',{p_token:token});if(context){context.token=token;break;}}catch{/* Try the other existing session, without granting any page access. */}}
   if(!context){location.href='/menu/staff/?next='+encodeURIComponent(location.pathname+location.search);return null;}
+  $('#osLogout').hidden=false;
+  $('#osLogout').onclick=()=>run($('#osLogout'),async()=>{
+    const owner=context.role==='owner';
+    await rpc(owner?'cfy_client_logout':'cfy_menu_staff_logout',{p_token:context.token});
+    localStorage.removeItem(owner?'cardfy_client_token_v1':'cardfy_menu_staff_token_v1');
+    location.href=owner?'/client-dashboard.html':'/menu/staff/';
+  });
   const allowed=context.permissions||[];
   const module=page.startsWith('analytics')?'analytics':page.startsWith('accounts')?'accounts':page;
   if(!allowed.includes(module)){throw new Error('ليس لديك صلاحية دخول هذه الصفحة. اطلب من المالك تعديل صلاحياتك.');}
