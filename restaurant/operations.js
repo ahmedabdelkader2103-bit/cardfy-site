@@ -1,4 +1,4 @@
-import {$,context,rpc,run,status,money,escapeHTML as esc} from './shared.js';
+import {$,context,rpc,run,status,money,escapeHTML as esc} from './shared.js?v=20260913-1';
 let page,snapshot,bucket='new',query='',type='',source='',timer;
 const typeLabel=t=>({delivery:'توصيل',takeaway:'استلام',dinein:'داخل المطعم'})[t]||t;
 const stateLabel=s=>({new:'جديد',preparing:'جاري التجهيز',ready:'جاهز',on_the_way:'في الطريق',delivered:'تم التوصيل',completed:'مكتمل',cancelled:'ملغي'})[s]||s;

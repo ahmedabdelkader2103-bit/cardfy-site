@@ -1,4 +1,4 @@
-import {$,context,rpc,run,status,money,escapeHTML as esc} from './shared.js';
+import {$,context,rpc,run,status,money,escapeHTML as esc} from './shared.js?v=20260913-1';
 let page,snapshot,lines=[],category='',query='',tableId='',key=crypto.randomUUID(),pending=false;
 const draftKey=()=>`cardfy_os_draft:${context.client_id}:${context.id||'owner'}:${page}:${tableId}`;
 const select=(name,label,options)=>`<label class="os-field">${label}<select name="${name}">${options.map(([v,t])=>`<option value="${esc(v)}">${esc(t)}</option>`).join('')}</select></label>`;

@@ -1,4 +1,4 @@
-import {$,context,rpc,run,status,money,escapeHTML as esc,dateFilters,bindPeriods,filterArgs,table,chart,exportCSV} from './shared.js';
+import {$,context,rpc,run,status,money,escapeHTML as esc,dateFilters,bindPeriods,filterArgs,table,chart,exportCSV} from './shared.js?v=20260913-1';
 const pages=[['revenue','الإيرادات'],['sources','مصادر الطلبات'],['drivers','أداء المندوبين'],['categories','أفضل الأقسام'],['hours','ساعات الذروة']];
 const labels={online:'أونلاين',pos:'POS',phone:'هاتف',delivery:'توصيل',takeaway:'استلام',dinein:'الصالة',cash:'نقدي',pay_on_delivery:'الدفع عند الاستلام',card_at_venue:'بطاقة في المطعم',new:'جديد',preparing:'جاري التجهيز',ready:'جاهز',on_the_way:'في الطريق',delivered:'تم التوصيل',completed:'مكتمل',cancelled:'ملغي'};
 const named=rows=>rows.map(x=>({...x,label:labels[x.label]||x.label}));
