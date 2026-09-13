@@ -6,6 +6,21 @@ const {JSDOM}=require('jsdom');
 const root=path.join(__dirname,'..');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const scripts=html=>[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].filter(m=>! /\bsrc\s*=/.test(m[1])).map(m=>m[2]);
+test('Tracking refresh never enables rating before exception receipt is verified',async()=>{
+  const dom=new JSDOM(read('menu/track/index.html'),{url:'https://cardfy.example/menu/track/?ref=TEST&token=test',runScripts:'outside-only'}),w=dom.window;
+  let receipt='pending';const calls=[];
+  w.setInterval=()=>0;
+  w.supabase={createClient:()=>({rpc:async(name,args)=>{calls.push([name,args]);return {data:{reference:'TEST',status:'delivered',order_type:'delivery',items:[],total:75,receipt_verification:receipt},error:null};}})};
+  w.eval(read('menu/track/track.js'));
+  for(receipt of ['pending','disputed','verified','not_required']){
+    await w.load();
+    assert.equal(w.document.querySelector('#ratingBox').hidden,['pending','disputed'].includes(receipt));
+    await w.load();
+    assert.equal(w.document.querySelector('#ratingBox').hidden,['pending','disputed'].includes(receipt));
+  }
+  assert.ok(calls.every(([name,args])=>name==='cfy_os_public_track'&&args.p_tracking_token==='test'));
+  dom.window.close();
+});
 test('Restaurant modules use the same release to avoid stale and split shared sessions',()=>{
   const release=read('restaurant/index.html').match(/app\.js\?v=([^"\s]+)/)[1];
   for(const file of ['app','analytics','finance','operations','pos','settings']){
