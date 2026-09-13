@@ -1,4 +1,4 @@
-import {$,context,rpc,run,status,money,escapeHTML as esc,dateFilters,bindPeriods,filterArgs,table,chart,exportCSV} from './shared.js';
+import {$,context,rpc,run,status,money,escapeHTML as esc,dateFilters,bindPeriods,filterArgs,table,chart,exportCSV} from './shared.js?v=20260913-1';
 const sections=[['revenues','الإيرادات'],['expenses','المصروفات'],['cashbox','الخزنة'],['inventory','المخزن'],['recipes','الوصفات والتكلفة'],['payroll','الموظفون والرواتب'],['profit','الأرباح والخسائر'],['reports','التقارير']];
 let snapshot,section,rows=[];
 const sum=(items,key='amount')=>items.reduce((n,row)=>n+Number(row[key]||0),0);
