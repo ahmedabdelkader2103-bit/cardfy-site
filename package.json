@@ -6,6 +6,10 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",
-    "jsdom": "30.0.1"
+    "jsdom": "30.0.1",
+    "jsqr": "^1.4.0"
+  },
+  "dependencies": {
+    "qrcode-generator": "^2.0.4"
   }
 }
