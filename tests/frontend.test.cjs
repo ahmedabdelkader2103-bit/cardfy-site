@@ -6,6 +6,26 @@ const {JSDOM}=require('jsdom');
 const root=path.join(__dirname,'..');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const scripts=html=>[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].filter(m=>! /\bsrc\s*=/.test(m[1])).map(m=>m[2]);
+test('Restaurant logout revokes only the selected role session, including on denied pages',async()=>{
+  for(const role of ['cashier','owner']){
+    const dom=new JSDOM(read('restaurant/index.html'),{url:'https://cardfy.example/restaurant/?as=staff',runScripts:'outside-only'}),w=dom.window;
+    const calls=[];
+    w.supabase={createClient:()=>({rpc:async(name,args)=>{calls.push([name,args]);return {data:name==='cfy_os_session'?{role,permissions:[]}:true,error:null};}})};
+    w.localStorage.setItem('cardfy_client_token_v1','owner-test-session');
+    w.localStorage.setItem('cardfy_menu_staff_token_v1','staff-test-session');
+    // Select owner explicitly for the second case without changing the other stored session.
+    if(role==='owner')w.history.replaceState(null,'','/restaurant/');
+    w.eval(read('restaurant/shared.js').replace(/export /g,'')+'; window.testBoot=boot;');
+    await assert.rejects(w.testBoot('settings'),/صلاحية/);
+    const button=w.document.querySelector('#osLogout');assert.equal(button.hidden,false);
+    await button.onclick();
+    assert.equal(calls.at(-1)[0],role==='owner'?'cfy_client_logout':'cfy_menu_staff_logout');
+    assert.equal(calls.at(-1)[1].p_token,role==='owner'?'owner-test-session':'staff-test-session');
+    assert.equal(w.localStorage.getItem(role==='owner'?'cardfy_client_token_v1':'cardfy_menu_staff_token_v1'),null);
+    assert.ok(w.localStorage.getItem(role==='owner'?'cardfy_menu_staff_token_v1':'cardfy_client_token_v1'));
+    dom.window.close();
+  }
+});
 function legacy(){
   const dom=new JSDOM('<style id="style-tag"></style><div id="app"></div>',{url:'https://cardfy.example/QBL-TEST',runScripts:'outside-only'});
   dom.window.eval(scripts(read('index.html'))[0]);
