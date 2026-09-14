@@ -7,6 +7,7 @@ on:
       - 'client-dashboard.html'
       - 'dashboard/menu/**'
       - 'restaurant/**'
+      - 'delivery-ui/**'
       - 'menu/**'
       - 'supabase/migrations/**'
       - 'tests/**'
@@ -27,4 +28,6 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci --ignore-scripts
+      - run: npm ci --ignore-scripts --prefix delivery-ui
+      - run: npm run build --prefix delivery-ui
       - run: npm test
