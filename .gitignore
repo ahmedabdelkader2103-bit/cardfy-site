@@ -1,3 +1,8 @@
 node_modules/
 supabase/.temp/
 .npm-cache/
+analytics-ui/approved/
+analytics-ui/prepare.cjs
+analytics-ui/prepare-migration.cjs
+analytics-ui/metrics-extra.sql
+analytics-ui/*.extra.css
