@@ -1,4 +1,4 @@
-import {$,context,rpc} from './shared.js?v=20260919-accounts';
+import {$,context,rpc} from './shared.js?v=20260919-owner';
 const statusClear=()=>{$('#osStatus').textContent='';};
 export async function mountDelivery(){
  if(context.shift_state==='offline')await rpc('cfy_menu_staff_shift',{p_token:context.token,p_state:'available'});
