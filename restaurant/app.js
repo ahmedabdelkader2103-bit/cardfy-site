@@ -1,14 +1,14 @@
-import {boot,status,$} from './shared.js?v=20260914-1';
+import {boot,status,$} from './shared.js?v=20260919-accounts';
 const page=new URLSearchParams(location.search).get('page')||'prep';
 try{
  const session=await boot(page);
  if(session){
-  if(page.startsWith('accounts')){const {mountFinance}=await import('./finance.js?v=20260914-1');await mountFinance(page);}
-  else if(page==='delivery'&&session.role==='delivery'){const {mountDelivery}=await import('./delivery.js?v=20260914-1');await mountDelivery();}
-  else if(['prep','kitchen','delivery'].includes(page)){const {mountOperations}=await import('./operations.js?v=20260914-1');await mountOperations(page);}
-  else if(page==='settings'){const {mountSettings}=await import('./settings.js?v=20260914-1');await mountSettings();}
-  else if(page.startsWith('analytics')){const {mountAnalytics}=await import('./analytics.js?v=20260914-1');await mountAnalytics(page);}
-  else if(['takeaway','dinein'].includes(page)){const {mountPOS}=await import('./pos.js?v=20260914-1');await mountPOS(page);}
+  if(page.startsWith('accounts')){const {mountFinance}=await import('./finance.js?v=20260919-accounts');await mountFinance(page);}
+  else if(page==='delivery'&&session.role==='delivery'){const {mountDelivery}=await import('./delivery.js?v=20260919-accounts');await mountDelivery();}
+  else if(['prep','kitchen','delivery'].includes(page)){const {mountOperations}=await import('./operations.js?v=20260919-accounts');await mountOperations(page);}
+  else if(page==='settings'){const {mountSettings}=await import('./settings.js?v=20260919-accounts');await mountSettings();}
+  else if(page.startsWith('analytics')){const {mountAnalytics}=await import('./analytics.js?v=20260919-accounts');await mountAnalytics(page);}
+  else if(['takeaway','dinein'].includes(page)){const {mountPOS}=await import('./pos.js?v=20260919-accounts');await mountPOS(page);}
   else throw new Error('الصفحة غير موجودة.');
  }
 }catch(error){status(error.message||'تعذر تحميل الصفحة.',true);}
