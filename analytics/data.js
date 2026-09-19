@@ -1,0 +1,11 @@
+/* Data-only transformations. Revenue remains the existing RPC's paid, non-cancelled revenue. */
+export const names={online:'المنيو الإلكتروني',pos:'نظام الكاشير POS',phone:'الطلبات الهاتفية',delivery:'توصيل',takeaway:'استلام',dinein:'الصالة',cash:'نقدي',pay_on_delivery:'عند الاستلام',card_at_venue:'بطاقة في المطعم',new:'جديد',preparing:'جاري التجهيز',ready:'جاهز',on_the_way:'في الطريق',delivered:'تم التوصيل',completed:'مكتمل',cancelled:'ملغي',available:'متاح',paused:'إيقاف مؤقت',offline:'انتهت الوردية'};
+export const number=v=>v==null?'غير متاح':Number(v).toLocaleString('ar-EG',{maximumFractionDigits:1});
+export const currency=v=>v==null?'غير متاح':'EGP '+Number(v).toLocaleString('en-US',{maximumFractionDigits:2});
+export const share=(v,total)=>total>0?Number(v)/total*100:0;
+export const delta=(current,previous)=>current==null||previous==null||Number(previous)===0?null:(Number(current)-Number(previous))/Number(previous)*100;
+export function shiftDate(date,days){const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);}
+export function periodDates(period,today){let from=today,to=today;if(period==='yesterday')from=to=shiftDate(today,-1);if(period==='week')from=shiftDate(today,-6);if(period==='thirty')from=shiftDate(today,-29);if(period==='month')from=today.slice(0,7)+'-01';if(period==='year')from=today.slice(0,4)+'-01-01';return {from,to};}
+export function previousDates(from,to){const days=Math.round((Date.parse(to)-Date.parse(from))/86400000)+1;return {from:shiftDate(from,-days),to:shiftDate(from,-1)};}
+export function normalise(data){const d={summary:{},...data};for(const key of ['days','sources','types','payments','statuses','categories','hours','drivers','branches','products','source_days','driver_days'])d[key]=Array.isArray(d[key])?d[key]:[];d.hours=Array.from({length:24},(_,hour)=>({label:hour,value:0,revenue:0,...d.hours.find(x=>Number(x.label)===hour)}));return d;}
+export function weekdayOrders(days){const counts=Array(7).fill(0);for(const day of days)counts[new Date(day.label+'T12:00:00Z').getUTCDay()]+=Number(day.orders)||0;return counts.map((value,index)=>({label:['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'][index],value}));}

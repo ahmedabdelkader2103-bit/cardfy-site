@@ -1,0 +1,30 @@
+{
+  "mainClass": "flex-1 overflow-y-auto px-8 py-6 space-y-6",
+  "kpiClass": "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4",
+  "cardClass": "bg-[#141e2c] border border-slate-800/90 rounded-2xl p-4 flex flex-col items-center text-center relative overflow-hidden group hover:border-slate-700 transition",
+  "panels": [
+    {
+      "title": "عدد الطلبات التي تم توصيلها",
+      "classes": "bg-[#141e2c] border border-slate-800 rounded-2xl p-5 flex flex-col"
+    },
+    {
+      "title": "متوسط وقت التوصيل (دقيقة)",
+      "classes": "bg-[#141e2c] border border-slate-800 rounded-2xl p-5 flex flex-col"
+    },
+    {
+      "title": "حالة التوصيل الكلية",
+      "classes": "bg-[#141e2c] border border-slate-800 rounded-2xl p-5 flex flex-col justify-between"
+    }
+  ],
+  "rows": [
+    {
+      "classes": "grid grid-cols-1 lg:grid-cols-3 gap-5",
+      "titles": [
+        "عدد الطلبات التي تم توصيلها",
+        "متوسط وقت التوصيل (دقيقة)",
+        "حالة التوصيل الكلية"
+      ]
+    }
+  ],
+  "tableClass": "bg-[#141e2c] border border-slate-800 rounded-2xl overflow-hidden flex flex-col"
+}

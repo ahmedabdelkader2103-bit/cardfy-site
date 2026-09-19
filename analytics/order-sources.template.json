@@ -1,0 +1,30 @@
+{
+  "mainClass": "p-6 lg:p-8 space-y-6 max-w-[1600px] w-full mx-auto",
+  "kpiClass": "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4",
+  "cardClass": "bg-surface-850 border border-surface-700/60 rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between shadow-sm",
+  "panels": [
+    {
+      "title": "الطلبات حسب المصدر عبر الزمن",
+      "classes": "lg:col-span-5 bg-surface-850 border border-surface-700/60 rounded-2xl p-5 flex flex-col justify-between shadow-sm"
+    },
+    {
+      "title": "توزيع الطلبات حسب المصدر",
+      "classes": "lg:col-span-4 bg-surface-850 border border-surface-700/60 rounded-2xl p-5 flex flex-col justify-between shadow-sm"
+    },
+    {
+      "title": "الإيرادات حسب المصدر",
+      "classes": "lg:col-span-3 bg-surface-850 border border-surface-700/60 rounded-2xl p-5 flex flex-col justify-between shadow-sm"
+    }
+  ],
+  "rows": [
+    {
+      "classes": "grid grid-cols-1 lg:grid-cols-12 gap-6",
+      "titles": [
+        "الطلبات حسب المصدر عبر الزمن",
+        "توزيع الطلبات حسب المصدر",
+        "الإيرادات حسب المصدر"
+      ]
+    }
+  ],
+  "tableClass": "bg-surface-850 border border-surface-700/60 rounded-2xl overflow-hidden shadow-sm"
+}

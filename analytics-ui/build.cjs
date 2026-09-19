@@ -1,0 +1,4 @@
+const fs=require('node:fs'),path=require('node:path'),{execFileSync}=require('node:child_process');
+const pages=['overview','revenue','order-sources','drivers','categories','peak-hours'];
+const cssBase=fs.readFileSync(path.join(__dirname,'../analytics/integration.css'),'utf8');
+for(const page of pages){execFileSync(process.execPath,[path.join(__dirname,'node_modules/tailwindcss/lib/cli.js'),'-c',path.join(__dirname,page+'.config.cjs'),'-i',path.join(__dirname,'input.css'),'-o',path.join(__dirname,'../analytics',page+'.css'),'--minify'],{stdio:'inherit'});const file=path.join(__dirname,'../analytics',page+'.css');fs.appendFileSync(file,'\n'+cssBase);if(page!=='overview'){const folder=path.join(__dirname,'../analytics',page);fs.mkdirSync(folder,{recursive:true});fs.copyFileSync(path.join(__dirname,'../analytics/index.html'),path.join(folder,'index.html'));}}

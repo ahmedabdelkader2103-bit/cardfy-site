@@ -1,0 +1,2 @@
+module.exports={"darkMode":"class","theme":{"extend":{"colors":{"brand":{"DEFAULT":"#FF6B00","hover":"#E05E00","light":"#FF8A33","dark":"#C85300"},"surface":{"bg":"#0B0F15","card":"#121820","border":"#1E2633","muted":"#1B232E","hover":"#222D3D"}},"fontFamily":{"sans":["Cairo","sans-serif"]}}},"content":[],"plugins":[]};
+module.exports.plugins=[require("@tailwindcss/forms"),require("@tailwindcss/container-queries")];module.exports.content=[require("node:path").join(__dirname,"../analytics/categories.template.json"),require("node:path").join(__dirname,"../analytics/app.js")];

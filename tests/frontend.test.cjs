@@ -181,7 +181,7 @@ test('All tracked frontend JavaScript and inline scripts parse',()=>{
   const {execFileSync}=require('node:child_process');
   const files=execFileSync('git',['ls-files'],{cwd:root,encoding:'utf8'}).trim().split(/\r?\n/);
   for(const file of files){
-    if(file.endsWith('.js'))assert.doesNotThrow(()=>file.startsWith('restaurant/')?execFileSync(process.execPath,['--check',file],{cwd:root}):new Function(read(file)),file);
+    if(file.endsWith('.js'))assert.doesNotThrow(()=>(file.startsWith('restaurant/')||file.startsWith('analytics/'))?execFileSync(process.execPath,['--check',file],{cwd:root}):new Function(read(file)),file);
     if(file.endsWith('.html'))for(const script of scripts(read(file)))assert.doesNotThrow(()=>new Function(script),file);
   }
 });

@@ -1,0 +1,80 @@
+{
+  "mainClass": "p-6 flex flex-col gap-6 max-w-[1700px] w-full mx-auto",
+  "kpiClass": "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-9 gap-3",
+  "cardClass": "bg-[#121c2b] border border-[#1d2c41] hover:border-orange-500/40 rounded-2xl p-3 flex flex-col justify-between transition-all shadow-sm",
+  "panels": [
+    {
+      "title": "المبيعات",
+      "classes": "lg:col-span-4 bg-[#121c2b] border border-[#1d2c41] rounded-2xl p-4 flex flex-col justify-between"
+    },
+    {
+      "title": "مصادر الطلبات",
+      "classes": "lg:col-span-3 bg-[#121c2b] border border-[#1d2c41] rounded-2xl p-4 flex flex-col justify-between"
+    },
+    {
+      "title": "أنواع الطلبات",
+      "classes": "lg:col-span-2 bg-[#121c2b] border border-[#1d2c41] rounded-2xl p-4 flex flex-col justify-between"
+    },
+    {
+      "title": "حالة الطلبات",
+      "classes": "lg:col-span-3 bg-[#121c2b] border border-[#1d2c41] rounded-2xl p-4 flex flex-col justify-between"
+    },
+    {
+      "title": "ساعات الذروة",
+      "classes": "bg-[#121c2b] border border-[#1d2c41] rounded-2xl p-4 flex flex-col justify-between"
+    },
+    {
+      "title": "أكثر الأصناف مبيعاً",
+      "classes": "bg-[#121c2b] border border-[#1d2c41] rounded-2xl p-4 flex flex-col justify-between"
+    },
+    {
+      "title": "أفضل الفئات أداءً",
+      "classes": "bg-[#121c2b] border border-[#1d2c41] rounded-2xl p-4 flex flex-col justify-between"
+    },
+    {
+      "title": "أداء المندوبين",
+      "classes": "bg-[#121c2b] border border-[#1d2c41] rounded-2xl p-4 flex flex-col justify-between"
+    },
+    {
+      "title": "أداء المطبخ وخطوط الإنتاج",
+      "classes": "lg:col-span-4 bg-[#121c2b] border border-[#1d2c41] rounded-2xl p-4 flex flex-col justify-between"
+    },
+    {
+      "title": "رؤى العملاء وطرق الدفع",
+      "classes": "lg:col-span-4 bg-[#121c2b] border border-[#1d2c41] rounded-2xl p-4 flex flex-col justify-between"
+    },
+    {
+      "title": "رؤى ذكية وتنبيهات",
+      "classes": "lg:col-span-4 bg-[#121c2b] border border-[#1d2c41] rounded-2xl p-4 flex flex-col justify-between"
+    }
+  ],
+  "rows": [
+    {
+      "classes": "grid grid-cols-1 lg:grid-cols-12 gap-5",
+      "titles": [
+        "المبيعات",
+        "مصادر الطلبات",
+        "أنواع الطلبات",
+        "حالة الطلبات"
+      ]
+    },
+    {
+      "classes": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5",
+      "titles": [
+        "ساعات الذروة",
+        "أكثر الأصناف مبيعاً",
+        "أفضل الفئات أداءً",
+        "أداء المندوبين"
+      ]
+    },
+    {
+      "classes": "grid grid-cols-1 lg:grid-cols-12 gap-5",
+      "titles": [
+        "أداء المطبخ وخطوط الإنتاج",
+        "رؤى العملاء وطرق الدفع",
+        "رؤى ذكية وتنبيهات"
+      ]
+    }
+  ],
+  "tableClass": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5"
+}
