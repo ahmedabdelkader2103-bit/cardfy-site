@@ -1,2 +1,2 @@
-import {context} from './shared.js?v=20260914-1';
+import {context} from './shared.js?v=20260919-accounts';
 export async function mountAnalytics(page){const section=page.replace('analytics-','');const names={revenue:'revenue',sources:'order-sources',drivers:'drivers',categories:'categories',hours:'peak-hours'};const suffix=names[section]?'/'+names[section]:'';const query=new URLSearchParams(location.search);query.delete('page');if(context.role!=='owner')query.set('as','staff');location.replace('/analytics'+suffix+(query.size?'?'+query.toString():''));}
