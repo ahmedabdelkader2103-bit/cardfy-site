@@ -1,7 +1,7 @@
 /* Shared Restaurant OS presentation and RPC boundary. Existing owner/staff sessions are reused. */
 export const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const money=value=>new Intl.NumberFormat('ar-EG',{style:'currency',currency:'EGP'}).format(Number(value)||0);
-export const modules=[['tools','أدوات المنيو','/dashboard/menu/'],['takeaway','كاشير تيك أواي','/restaurant/?page=takeaway'],['dinein','كاشير الصالة','/restaurant/?page=dinein'],['prep','محضّر الطلب','/restaurant/?page=prep'],['kitchen','المطبخ','/restaurant/?page=kitchen'],['delivery','التوصيل','/restaurant/?page=delivery'],['analytics','التحليلات','/restaurant/?page=analytics'],['accounts','الحسابات','/restaurant/?page=accounts'],['settings','الإعدادات والصلاحيات','/restaurant/?page=settings']];
+export const modules=[['owner','مركز قيادة المالك','/restaurant/?page=owner'],['tools','أدوات المنيو','/dashboard/menu/'],['takeaway','كاشير تيك أواي','/restaurant/?page=takeaway'],['dinein','كاشير الصالة','/restaurant/?page=dinein'],['prep','محضّر الطلب','/restaurant/?page=prep'],['kitchen','المطبخ','/restaurant/?page=kitchen'],['delivery','التوصيل','/restaurant/?page=delivery'],['analytics','التحليلات','/restaurant/?page=analytics'],['accounts','الحسابات','/restaurant/?page=accounts'],['settings','الإعدادات والصلاحيات','/restaurant/?page=settings']];
 export const $=selector=>document.querySelector(selector);
 export const sb=window.supabase.createClient('https://ytixcczbjmjnuotzavbb.supabase.co','sb_publishable_0j9jf0boDrMGGO8S6mw-4Q_5bOeHIuU');
 export let context;
@@ -25,10 +25,11 @@ export async function boot(page){
     location.href=owner?'/client-dashboard.html':'/menu/staff/';
   });
   const allowed=context.permissions||[];
-  const module=page.startsWith('analytics')?'analytics':page.startsWith('accounts')?'accounts':page;
-  if(!allowed.includes(module)){throw new Error('ليس لديك صلاحية دخول هذه الصفحة. اطلب من المالك تعديل صلاحياتك.');}
+  const module=page.startsWith('owner')?'owner':page.startsWith('analytics')?'analytics':page.startsWith('accounts')?'accounts':page;
+  if(module==='owner'&&context.role!=='owner')throw new Error('هذه الصفحة متاحة لمالك المطعم فقط.');
+  if(module!=='owner'&&!allowed.includes(module)){throw new Error('ليس لديك صلاحية دخول هذه الصفحة. اطلب من المالك تعديل صلاحياتك.');}
   document.body.classList.toggle('os-collapsed',matchMedia('(max-width:1050px)').matches);
-  $('#osNav').innerHTML=modules.filter(([id])=>allowed.includes(id)).map(([id,title,url])=>`<a href="${url}${context.role==='owner'?'':(url.includes('?')?'&':'?')+'as=staff'}" ${id===module?'aria-current="page"':''}>${title}</a>`).join('');
+  $('#osNav').innerHTML=modules.filter(([id])=>id==='owner'?context.role==='owner':allowed.includes(id)).map(([id,title,url])=>`<a href="${url}${context.role==='owner'?'':(url.includes('?')?'&':'?')+'as=staff'}" ${id===module?'aria-current="page"':''}>${title}</a>`).join('');
   $('#osIdentity').textContent=context.name||'CARDfy';
   $('#osMenu').onclick=()=>{document.body.classList.toggle('os-collapsed');$('#osMenu').setAttribute('aria-expanded',String(!document.body.classList.contains('os-collapsed')));};
   $('#osTheme').onclick=()=>applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
