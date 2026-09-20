@@ -50,9 +50,10 @@ test('Accounts UI exposes all nine approved screens with responsive and brand sa
   for(const page of ['revenues','expenses','cashbox','inventory','recipes','payroll','profit','reports'])assert.match(js,new RegExp(`['"]${page}['"]`));
   assert.match(js,/CARDfy/);
   assert.doesNotMatch(js,/fy CARD|FY CARD|CARD fy/);
-  assert.match(html,/finance\.css\?v=20260920-owner-ui2/);
+  assert.match(html,/finance\.css\?v=20260920-kitchen-ui2/);
   assert.match(css,/@media\(max-width:1200px\)/);
   assert.match(css,/@media\(max-width:760px\)/);
   assert.match(css,/@media\(max-width:430px\)/);
   assert.match(js,/لا يتم افتراضها|غير مخصومة/);
 });
+
