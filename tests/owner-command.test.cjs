@@ -77,6 +77,6 @@ test('Owner UI contains only the two approved pages with RTL responsive safeguar
   assert.match(js,/الربح التشغيلي التقديري/);assert.doesNotMatch(js,/صافي الربح|تنبيهات ذكية|ذكاء اصطناعي/);
   assert.match(js,/<bdi dir="ltr">CARDfy<\/bdi>/);assert.doesNotMatch(js,/fy CARD|FY CARD|CARD fy/);
   assert.match(shared,/context\.role!=='owner'/);assert.match(shared,/id==='owner'\?context\.role==='owner'/);
-  assert.match(html,/owner\.css\?v=20260920-owner-ui2/);assert.match(css,/@media\(max-width:1200px\)/);assert.match(css,/@media\(max-width:820px\)/);assert.match(css,/@media\(max-width:560px\)/);
+  assert.match(html,/owner\.css\?v=20260920-kitchen-ui/);assert.match(css,/@media\(max-width:1200px\)/);assert.match(css,/@media\(max-width:820px\)/);assert.match(css,/@media\(max-width:560px\)/);
   assert.match(css,/\.owner-alert-table-wrap\{overflow-x:auto/);
 });

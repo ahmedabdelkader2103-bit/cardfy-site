@@ -23,7 +23,7 @@ test('Tracking refresh never enables rating before exception receipt is verified
 });
 test('Restaurant modules use the same release to avoid stale and split shared sessions',()=>{
   const release=read('restaurant/index.html').match(/app\.js\?v=([^"\s]+)/)[1];
-  for(const file of ['app','analytics','finance','operations','pos','settings']){
+  for(const file of ['app','analytics','finance','kitchen','operations','pos','settings']){
     const source=read(`restaurant/${file}.js`);
     for(const match of source.matchAll(/['"]\.\/\w+\.js\?v=([^'"]+)['"]/g))assert.equal(match[1],release);
     assert.ok(source.includes(`./shared.js?v=${release}`));
