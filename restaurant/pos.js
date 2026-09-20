@@ -1,5 +1,5 @@
-import {$,context,rpc,run,status,money,escapeHTML as esc} from './shared.js?v=20260920-owner-ui';
-import {customerHandoff} from './customer-handoff.mjs?v=20260920-owner-ui';
+import {$,context,rpc,run,status,money,escapeHTML as esc} from './shared.js?v=20260920-owner-ui2';
+import {customerHandoff} from './customer-handoff.mjs?v=20260920-owner-ui2';
 let page,snapshot,lines=[],category='',query='',tableId='',key=crypto.randomUUID(),pending=false;
 const draftKey=()=>`cardfy_os_draft:${context.client_id}:${context.id||'owner'}:${page}:${tableId}`;
 const select=(name,label,options)=>`<label class="os-field">${label}<select name="${name}">${options.map(([v,t])=>`<option value="${esc(v)}">${esc(t)}</option>`).join('')}</select></label>`;

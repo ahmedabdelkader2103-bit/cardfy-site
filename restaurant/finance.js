@@ -1,5 +1,5 @@
-import {$,context,rpc,run,status,money,escapeHTML as esc,dateFilters,bindPeriods,filterArgs,chart,exportCSV} from './shared.js?v=20260920-owner-ui';
-import {active,total,group,byDate,percent,financeModel,safeMargin,suggestedPrice} from './finance-data.js?v=20260920-owner-ui';
+import {$,context,rpc,run,status,money,escapeHTML as esc,dateFilters,bindPeriods,filterArgs,chart,exportCSV} from './shared.js?v=20260920-owner-ui2';
+import {active,total,group,byDate,percent,financeModel,safeMargin,suggestedPrice} from './finance-data.js?v=20260920-owner-ui2';
 
 const sections=[['revenues','الإيرادات','↗','متابعة المبيعات وقنوات التحصيل'],['expenses','المصروفات','↘','تسجيل ومراجعة مصروفات التشغيل'],['cashbox','الخزنة','▣','حركة النقدية والرصيد المتوقع'],['inventory','المخزن','▤','قيمة المواد وحدود إعادة الطلب'],['recipes','الوصفات والتكلفة','◫','تكلفة الوصفة وهامش الصنف'],['payroll','الموظفون والرواتب','♙','الرواتب الأساسية والمدفوعات'],['profit','الأرباح والخسائر','⌁','النتيجة التشغيلية للفترة'],['reports','التقارير','▥','تقارير مالية قابلة للتصدير']];
 const labels=Object.fromEntries(sections.map(([id,label])=>[id,label]));

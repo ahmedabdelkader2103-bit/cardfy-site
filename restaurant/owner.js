@@ -1,9 +1,9 @@
-import {$,context,rpc,run,status,money,escapeHTML as esc,dateFilters,bindPeriods,filterArgs} from './shared.js?v=20260920-owner-ui';
-import {ownerModel,filterAlerts,safeOwnerRoute,actionLabel,operationLabel,severityLabel,kindLabel} from './owner-data.js?v=20260920-owner-ui';
+import {$,rpc,run,status,money,escapeHTML as esc,dateFilters,bindPeriods,filterArgs} from './shared.js?v=20260920-owner-ui2';
+import {ownerModel,filterAlerts,safeOwnerRoute,actionLabel,operationLabel,severityLabel,kindLabel} from './owner-data.js?v=20260920-owner-ui2';
 
-let page='owner',model={},filters={severity:'',kind:'',query:''};
+let page='owner',actor,model={},filters={severity:'',kind:'',query:''};
 const num=value=>Number(value)||0;
-const route=value=>`${value}${context.role==='owner'?'':'&as=staff'}`;
+const route=value=>`${value}${actor.role==='owner'?'':'&as=staff'}`;
 const value=(number,digits=0)=>new Intl.NumberFormat('ar-EG',{maximumFractionDigits:digits}).format(num(number));
 const unavailable=(reason='لا يدعمه نموذج البيانات الحالي')=>`<span class="owner-unavailable">غير متاح</span><small>${esc(reason)}</small>`;
 const metric=(title,number,caption,{tone='',icon='◆',missing=false}={})=>`<article class="owner-kpi ${tone} ${missing?'is-missing':''}"><span class="owner-icon" aria-hidden="true">${icon}</span><div><span>${esc(title)}</span>${missing?unavailable(caption):`<strong>${esc(number)}</strong><small>${esc(caption)}</small>`}</div></article>`;
@@ -11,8 +11,9 @@ const panel=(title,body,link='',caption='',classes='')=>`<section class="owner-p
 const empty=message=>`<p class="owner-empty">${esc(message)}</p>`;
 const nowCairo=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Cairo'});
 
-export async function mountOwner(value){
-  if(context.role!=='owner')throw new Error('هذه الصفحة متاحة لمالك المطعم فقط.');
+export async function mountOwner(value,session){
+  actor=session;
+  if(actor?.role!=='owner')throw new Error('هذه الصفحة متاحة لمالك المطعم فقط.');
   page=value==='owner-alerts'?'owner-alerts':'owner';document.body.classList.add('owner-active');
   $('#osContent').innerHTML=`<div class="owner-heading"><div><span class="owner-eyebrow"><bdi dir="ltr">CARDfy</bdi> · المالك</span><h1>${page==='owner-alerts'?'مركز التنبيهات والإجراءات':'مركز قيادة المالك'}</h1><p>${page==='owner-alerts'?'كل التنبيهات التشغيلية المهمة مرتبة حسب الأولوية، مع انتقال مباشر إلى مكان المعالجة.':'نظرة تنفيذية على التشغيل والمال والعملاء والمخزون لاتخاذ القرار من مكان واحد.'}</p></div><div class="owner-heading-actions"><a class="os-button ${page==='owner'?'primary':''}" href="?page=owner">مركز القيادة</a><a class="os-button ${page==='owner-alerts'?'primary':''}" href="?page=owner-alerts">التنبيهات والإجراءات</a></div></div><div id="ownerFilters">${dateFilters()}</div><div id="ownerBody"></div>`;
   bindPeriods();$('#applyFilters').onclick=e=>run(e.target,load);await load();
@@ -20,7 +21,7 @@ export async function mountOwner(value){
 
 async function load(){
   status('جارٍ تحميل بيانات مركز القيادة…');const selected=$('#branch').value;
-  model=ownerModel(await rpc('cfy_os_owner_command',{p_token:context.token,...filterArgs()}));
+  model=ownerModel(await rpc('cfy_os_owner_command',{p_token:actor.token,...filterArgs()}));
   $('#branch').innerHTML='<option value="">جميع الفروع</option>'+model.branches.map(branch=>`<option value="${esc(branch.id)}">${esc(branch.name)}</option>`).join('');
   $('#branch').value=selected;render();status('');
 }
