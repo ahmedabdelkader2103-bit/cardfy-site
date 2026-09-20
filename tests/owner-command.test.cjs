@@ -69,8 +69,13 @@ test('Owner UI contains only the two approved pages with RTL responsive safeguar
   const shared=fs.readFileSync(path.join(__dirname,'../restaurant/shared.js'),'utf8');
   const html=fs.readFileSync(path.join(__dirname,'../restaurant/index.html'),'utf8');
   assert.match(js,/owner-alerts/);assert.match(js,/مركز قيادة المالك/);assert.match(js,/مركز التنبيهات والإجراءات/);
+  for(const label of ['رصيد الخزنة','مبيعات اليوم','الطلبات الجارية','الطلبات المتأخرة','متوسط التحضير','متوسط التوصيل','المندوبون النشطون','التقييم العام'])assert.match(js,new RegExp(label));
+  for(const label of ['التنبيهات الحرجة','التنبيهات المتوسطة','تم حلها اليوم','في انتظار المتابعة','متوسط وقت الاستجابة'])assert.match(js,new RegExp(label));
+  for(const column of ['عنوان التنبيه','المصدر','الوقت','الحالة','المسؤول','الإجراء'])assert.match(js,new RegExp(column));
+  assert.match(js,/غير متاح/);assert.match(js,/غير مسند/);assert.match(js,/غير مرصودة/);
   assert.match(js,/الربح التشغيلي التقديري/);assert.doesNotMatch(js,/صافي الربح|تنبيهات ذكية|ذكاء اصطناعي/);
   assert.match(js,/<bdi dir="ltr">CARDfy<\/bdi>/);assert.doesNotMatch(js,/fy CARD|FY CARD|CARD fy/);
   assert.match(shared,/context\.role!=='owner'/);assert.match(shared,/id==='owner'\?context\.role==='owner'/);
-  assert.match(html,/owner\.css\?v=20260919-owner/);assert.match(css,/@media\(max-width:1200px\)/);assert.match(css,/@media\(max-width:820px\)/);assert.match(css,/@media\(max-width:480px\)/);
+  assert.match(html,/owner\.css\?v=20260920-owner-ui/);assert.match(css,/@media\(max-width:1200px\)/);assert.match(css,/@media\(max-width:820px\)/);assert.match(css,/@media\(max-width:560px\)/);
+  assert.match(css,/\.owner-alert-table-wrap\{overflow-x:auto/);
 });
