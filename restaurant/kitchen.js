@@ -1,4 +1,4 @@
-import {$,context,rpc,run,status,escapeHTML as esc} from './shared.js?v=20260920-kitchen-ui';
+import {$,context,rpc,run,status,escapeHTML as esc} from './shared.js?v=20260920-kitchen-ui2';
 
 let snapshot;
 let filter='all';
@@ -106,3 +106,4 @@ function printOrder(id){
   popup.print();
   status('تم فتح حوار الطباعة. تحقق من خروج الورقة على الطابعة.');
 }
+
