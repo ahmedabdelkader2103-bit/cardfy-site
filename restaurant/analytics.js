@@ -1,2 +1,2 @@
-import {context} from './shared.js?v=20260920-kitchen-ui2';
+import {context} from './shared.js?v=20260920-pos-ui';
 export async function mountAnalytics(page){const section=page.replace('analytics-','');const names={revenue:'revenue',sources:'order-sources',drivers:'drivers',categories:'categories',hours:'peak-hours'};const suffix=names[section]?'/'+names[section]:'';const query=new URLSearchParams(location.search);query.delete('page');if(context.role!=='owner')query.set('as','staff');location.replace('/analytics'+suffix+(query.size?'?'+query.toString():''));}
