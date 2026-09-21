@@ -11,7 +11,7 @@ const operations=fs.readFileSync(path.join(root,'restaurant','operations.js'),'u
 
 test('Kitchen uses the dedicated approved presentation inside the existing shell',()=>{
   assert.match(app,/page==='kitchen'.+mountKitchen/);
-  assert.match(html,/kitchen\.css\?v=20260920-kitchen-ui2/);
+  assert.match(html,/kitchen\.css\?v=20260920-pos-ui/);
   assert.match(source,/المطبخ/);
   assert.match(source,/الطلبات النشطة في انتظار التحضير/);
   assert.match(source,/تم التحضير/);
@@ -43,4 +43,3 @@ test('Kitchen output escapes real order content and keeps CARDfy shell branding'
   assert.match(source,/esc\(order\.order_source/);
   assert.match(html,/<bdi dir="ltr">CARD<span>fy<\/span><\/bdi>/);
 });
-

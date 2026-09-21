@@ -1,4 +1,4 @@
-import {$,context,rpc,run,status,money,escapeHTML as esc} from './shared.js?v=20260920-kitchen-ui2';
+import {$,context,rpc,run,status,money,escapeHTML as esc} from './shared.js?v=20260920-pos-ui';
 let page,snapshot,bucket='new',query='',type='',source='',timer;
 const typeLabel=t=>({delivery:'توصيل',takeaway:'استلام',dinein:'داخل المطعم'})[t]||t;
 const stateLabel=s=>({new:'جديد',preparing:'جاري التجهيز',ready:'جاهز',on_the_way:'في الطريق',delivered:'تم التوصيل',completed:'مكتمل',cancelled:'ملغي'})[s]||s;
@@ -23,4 +23,3 @@ async function perform(id,action,button){const send=data=>rpc('cfy_os_order_acti
  if(action==='delivery_exception')return modal('تعذر الوصول إلى OTP','<p>سيُرسل للعميل طلب تأكيد استلام داخل متابعة الطلب. لن يغلق الطلب نهائيًا قبل رده.</p><label class="os-field">سبب الاستثناء<textarea name="reason" required minlength="5" maxlength="500"></textarea></label><label><input name="confirmed" type="checkbox" value="true" required> سلمت الطلب للعميل وأؤكد تسجيل الاستثناء.</label>',send);
  if(action==='issue')return modal('تسجيل مشكلة','<label class="os-field">وصف المشكلة<textarea name="text" required maxlength="1000"></textarea></label>',send);
  await run(button,async()=>{await send(action==='assign_driver'?{driver_id:button.closest('[data-order]').querySelector('[data-driver]').value}:{});await load();});}
-
