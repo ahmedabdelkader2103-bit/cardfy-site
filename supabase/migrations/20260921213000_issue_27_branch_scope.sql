@@ -133,7 +133,7 @@ declare v_order public.cfy_menu_orders%rowtype; v_settings public.cfy_menu_setti
       insert into public.cfy_menu_order_events(order_id,client_id,event_type,actor_type,actor_id) values(v_order.id,p_client_id,'delivered',p_actor_type,p_actor_id);
     when 'complete' then
       if not ((v_order.order_type='delivery' and v_order.status='delivered') or (v_order.order_type in ('takeaway','dinein') and v_order.status='ready')) then raise exception 'invalid_transition' using errcode='P0001'; end if;
-      if v_order.order_type='delivery' and v_order.payment_status<>'paid' then raise exception 'payment_required' using errcode='P0001'; end if;
+      if v_order.order_type in ('delivery','dinein') and v_order.payment_status<>'paid' then raise exception 'payment_required' using errcode='P0001'; end if;
       update public.cfy_menu_orders set status='completed',completed_at=coalesce(completed_at,now()),payment_status=case when order_type='takeaway' and payment_method='cash' then 'paid' else payment_status end,paid_at=case when order_type='takeaway' and payment_method='cash' then coalesce(paid_at,now()) else paid_at end,updated_at=now() where id=v_order.id;
       insert into public.cfy_menu_order_events(order_id,client_id,event_type,actor_type,actor_id) values(v_order.id,p_client_id,'completed',p_actor_type,p_actor_id);
     when 'cancel' then
@@ -170,7 +170,8 @@ declare actor jsonb:=public.cfy_os_require(p_token,p_page);cid uuid:=(actor->>'c
  if not ((p_page='prep' and p_action in ('accept','ready','assign_driver','complete','issue','resolve_issue','reprint','cancel')) or (p_page='kitchen' and p_action in ('accept','ready','reprint')) or (p_page in ('takeaway','dinein') and p_action in ('accept','complete','reprint','cancel')) or (p_page='delivery' and p_action in ('picked_up','delivered','issue','delivery_exception'))) then raise exception 'forbidden_action' using errcode='42501';end if;
  select * into ord from cfy_menu_orders where id=p_order_id and client_id=cid and public.cfy_os_actor_branch_allowed(actor,branch_id) for update;if ord.id is null then raise exception 'order_not_found';end if;
  if actor->>'role'<>'owner' and p_page='delivery' and (ord.order_type<>'delivery' or ord.assigned_driver_id is distinct from aid) then raise exception 'not_assigned_driver' using errcode='42501';end if;
- if actor->>'role'='delivery' and coalesce(actor->>'shift_state','offline')='offline' then raise exception 'shift_inactive' using errcode='42501';end if;
+ -- Only an explicitly available delivery shift is active. Paused/offline sessions stay inactive.
+ if actor->>'role'='delivery' and coalesce(actor->>'shift_state','offline')<>'available' then raise exception 'shift_inactive' using errcode='42501';end if;
  if p_page='dinein' and ord.order_type<>'dinein' then raise exception 'forbidden_order_type';end if;
  if p_page='takeaway' and ord.order_type='dinein' then raise exception 'forbidden_order_type';end if;
  if p_action='delivery_exception' then
@@ -397,3 +398,4 @@ revoke all on function public.cfy_os_analytics(text,date,date,uuid) from public;
 grant execute on function public.cfy_os_analytics(text,date,date,uuid) to anon,authenticated;
 
 commit;
+
