@@ -64,6 +64,10 @@ test('approved POS layout keeps desktop tablet and mobile breakpoints',()=>{
   assert.match(css,/\.pos-workspace\{display:grid.+height:calc\(100dvh - 98px\)/);
   assert.match(css,/\.pos-order\{position:static/);
   assert.match(css,/\.pos-product:hover.+translateY\(-4px\)/);
+  assert.match(css,/body\.pos-active\{--os-bg:#080d16/);
+  assert.match(css,/\.pos-current\.editing/);
+  assert.match(css,/\.pos-current\.editing #posEditor.+overflow-y:auto/);
+  assert.match(css,/\.pos-categories.+overflow-y:visible/);
 });
 
 test('POS uses the approved hero and keeps operational fields secondary',()=>{
@@ -88,13 +92,22 @@ test('Delivery and Takeaway toggles keep real order payload and payment contract
   w.eval(`const context={client_id:'client',id:'staff',token:'token'};const $=selector=>document.querySelector(selector);const esc=value=>String(value??'');const money=value=>String(value);const status=()=>{};const customerHandoff=()=>'';const run=async(button,action)=>action();const rpc=async name=>name==='cfy_os_operational_snapshot'?{catalog:window.catalog,branches:[{id:'b1',name:'الفرع'}]}:{};`+pos.replace(/^import .*;\r?\n/gm,'').replace(/export /g,'')+';window.testMount=mountPOS;window.testPayload=payload;');
   await w.testMount('takeaway');
   w.document.querySelector('[data-product]').click();
+  const editor=w.document.querySelector('#posEditor'),notes=w.document.querySelector('#posNotes');
+  assert.equal(editor.compareDocumentPosition(notes)&w.Node.DOCUMENT_POSITION_FOLLOWING,w.Node.DOCUMENT_POSITION_FOLLOWING);
+  assert.equal(w.document.querySelector('.pos-current').classList.contains('editing'),true);
   w.document.querySelector('[data-type="takeaway"]').click();
   assert.equal(w.testPayload().order_type,'takeaway');
   assert.equal(w.document.querySelector('#addressPOS').hidden,true);
   assert.deepEqual([...w.document.querySelector('[name="payment_method"]').options].map(option=>option.value),['cash','card_at_venue']);
   w.document.querySelector('[data-type="delivery"]').click();
+  notes.value='بدون أدوات';
+  w.document.querySelector('[name="delivery_notes"]').value='إحضار فكة وعدم استخدام الجرس';
   assert.equal(w.testPayload().order_type,'delivery');
+  assert.equal(w.testPayload().notes,'بدون أدوات\nملاحظات التوصيل: إحضار فكة وعدم استخدام الجرس');
   assert.equal(w.document.querySelector('#addressPOS').hidden,false);
   assert.deepEqual([...w.document.querySelector('[name="payment_method"]').options].map(option=>option.value),['cash','pay_on_delivery']);
+  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+  w.document.querySelector('#addressPOS').click();
+  assert.ok(w.document.querySelector('#posAddressDialog textarea[name="delivery_notes"]'));
   dom.window.close();
 });
