@@ -1,4 +1,4 @@
-import {$,context,rpc} from './shared.js?v=20260920-pos-ui';
+import {$,context,rpc} from './shared.js?v=20260922-pos-ui';
 const statusClear=()=>{$('#osStatus').textContent='';};
 export async function mountDelivery(){
  const css=document.createElement('link');css.rel='stylesheet';css.href='/restaurant/delivery-ui/main.css?v=20260914-1';document.head.append(css);
