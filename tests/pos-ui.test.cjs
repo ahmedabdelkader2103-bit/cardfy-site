@@ -13,7 +13,7 @@ const html=fs.readFileSync(path.join(root,'restaurant','index.html'),'utf8');
 test('approved Takeaway and Delivery POS stays in the existing CARDfy shell',()=>{
   assert.match(app,/page==='takeaway'.+\.\/pos\.js\?v=20260922-pos-ui/);
   assert.match(app,/page==='dinein'.+\.\/pos-dinein\.js\?v=20260922-pos-ui/);
-  assert.match(html,/pos\.css\?v=20260922-pos-ui/);
+  assert.match(html,/pos\.css\?v=20260926-lovable-fidelity/);
   assert.match(html,/<bdi dir="ltr">CARD<span>fy<\/span><\/bdi>/);
   assert.doesNotMatch(pos,/أحمد محمد|8 سبتمبر 2026|وسط البلد|مدينة نصر/);
   assert.match(legacyDinein,/مخطط الصالة/);
@@ -65,6 +65,12 @@ test('approved POS layout keeps desktop tablet and mobile breakpoints',()=>{
   assert.match(css,/\.pos-order\{position:static/);
   assert.match(css,/\.pos-product:hover.+translateY\(-4px\)/);
   assert.match(css,/body\.pos-active\{--os-bg:#080d16/);
+  assert.match(css,/Lovable fidelity pass/);
+  assert.match(css,/--os-bg:#0b1218/);
+  assert.match(css,/radial-gradient\(circle at 72% 38%/);
+  assert.match(css,/\.pos-product-media img,.+aspect-ratio:1\.48/);
+  assert.match(css,/\.pos-categories button\{min-height:32px/);
+  assert.match(css,/\.pos-product-copy>i\{width:27px;height:27px;border-radius:50%/);
   assert.match(css,/\.pos-current\.editing/);
   assert.match(css,/\.pos-current\.editing #posEditor.+overflow-y:auto/);
   assert.match(css,/\.pos-categories.+overflow-y:visible/);
