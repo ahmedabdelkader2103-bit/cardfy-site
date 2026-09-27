@@ -1,0 +1,10 @@
+body.lovable-pos-active{overflow:hidden;background:#080d14}
+body.lovable-pos-active>.os-shell{display:block;min-height:100vh}
+body.lovable-pos-active #osNav,body.lovable-pos-active>.os-header{display:none!important}
+body.lovable-pos-active.lovable-nav-open #osNav{display:flex!important;position:fixed;z-index:100;top:0;right:0;bottom:0;width:min(20rem,85vw);padding:1rem;flex-direction:column;align-items:stretch;background:var(--os-panel);border-left:1px solid var(--os-line);box-shadow:-18px 0 55px #000a;overflow-y:auto;transform:none!important;visibility:visible!important;opacity:1!important}
+body.lovable-pos-active.lovable-nav-open #osNav a{display:block;width:100%;flex:none;white-space:normal}
+body.lovable-pos-active .os-main{margin:0!important;padding:0!important;max-width:none!important}
+body.lovable-pos-active #osContent{padding:0!important;margin:0!important;max-width:none!important}
+body.lovable-pos-active #osStatus{position:fixed;z-index:90;bottom:1rem;left:1rem;right:auto;max-width:min(30rem,calc(100vw - 2rem))}
+#lovablePosRoot{min-height:100vh;direction:rtl}
+.pos-branch-dialog form{display:grid;gap:1rem;min-width:min(26rem,calc(100vw - 3rem))}

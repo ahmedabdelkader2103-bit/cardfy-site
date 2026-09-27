@@ -10,7 +10,7 @@ try{
   else if(['prep','delivery'].includes(page)){const {mountOperations}=await import('./operations.js?v=20260922-pos-ui');await mountOperations(page);}
   else if(page==='settings'){const {mountSettings}=await import('./settings.js?v=20260922-pos-ui');await mountSettings();}
   else if(page.startsWith('analytics')){const {mountAnalytics}=await import('./analytics.js?v=20260922-pos-ui');await mountAnalytics(page);}
-  else if(page==='takeaway'){const {mountPOS}=await import('./pos.js?v=20260922-pos-ui');await mountPOS(page);}
+  else if(page==='takeaway'){const {mountPOS}=await import('./pos.js?v=20260926-lovable-pos');await mountPOS(page);}
   else if(page==='dinein'){const {mountPOS}=await import('./pos-dinein.js?v=20260922-pos-ui');await mountPOS(page);}
   else throw new Error('الصفحة غير موجودة.');
  }
