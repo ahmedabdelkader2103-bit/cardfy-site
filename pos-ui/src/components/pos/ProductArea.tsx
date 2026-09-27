@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Flame, Plus, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import banner from "@/assets/brand-banner.jpg";
 import { categories, egp, products, type Product } from "@/lib/pos-data";
+import { hasRequiredSelections } from "@/lib/pos-order";
 
 export function ProductArea({ onAdd, externalQuery="" }: { onAdd: (product: Product) => void; externalQuery?:string }) {
   const [category, setCategory] = useState("all");
@@ -100,6 +101,11 @@ export function ProductArea({ onAdd, externalQuery="" }: { onAdd: (product: Prod
                 {p.badge && (
                   <span className="absolute right-2 top-2 rounded-lg brand-gradient px-2 py-0.5 text-[11px] font-bold text-brand-foreground">
                     {p.badge}
+                  </span>
+                )}
+                {hasRequiredSelections(p) && (
+                  <span className="absolute left-2 top-2 rounded-md border border-brand/50 bg-surface/80 px-1.5 py-0.5 text-[10px] font-bold text-brand backdrop-blur-xl">
+                    اختيار مطلوب
                   </span>
                 )}
               </div>

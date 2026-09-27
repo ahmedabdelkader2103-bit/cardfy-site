@@ -1,7 +1,6 @@
 import { Bike, Check, MapPin, Minus, Plus, Save, ShoppingBag, Trash2 } from "lucide-react";
 import { egp } from "@/lib/pos-data";
 import { getProduct, lineTotal, selectionLabels, type OrderLine } from "@/lib/pos-order";
-import { ModifierPanel } from "./ModifierPanel";
 
 export type OrderType = "delivery" | "pickup";
 
@@ -9,13 +8,10 @@ export function OrderPanel({
   orderType,
   onOrderTypeChange,
   lines,
-  selectedLine,
   onSelectLine,
   onQuantity,
   onRemove,
   onClearAll,
-  onToggleModifier,
-  onCloseModifiers,
   notes,
   onNotesChange,
   subtotal,
@@ -30,13 +26,10 @@ export function OrderPanel({
   orderType: OrderType;
   onOrderTypeChange: (type: OrderType) => void;
   lines: OrderLine[];
-  selectedLine: OrderLine | null;
   onSelectLine: (id: string) => void;
   onQuantity: (id: string, delta: number) => void;
   onRemove: (id: string) => void;
   onClearAll: () => void;
-  onToggleModifier: (groupId: string, optionId: string) => void;
-  onCloseModifiers: () => void;
   notes: string;
   onNotesChange: (value: string) => void;
   subtotal: number;
@@ -74,7 +67,7 @@ export function OrderPanel({
         </div>
       </div>
 
-      {/* Current order + modifiers */}
+      {/* Current order */}
       <div className="panel flex min-h-0 flex-1 flex-col p-3">
         <div className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 pb-3">
           <h2 className="truncate text-base font-extrabold">
@@ -101,7 +94,6 @@ export function OrderPanel({
           {lines.map((line) => {
             const product = getProduct(line.productId);
             const labels = selectionLabels(line);
-            const active = selectedLine?.id === line.id;
             return (
               <div
                 key={line.id}
@@ -109,9 +101,7 @@ export function OrderPanel({
                 tabIndex={0}
                 onClick={() => onSelectLine(line.id)}
                 onKeyDown={(e) => e.key === "Enter" && onSelectLine(line.id)}
-                className={`grid cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-xl border p-2 transition-colors ${
-                  active ? "border-brand bg-brand/10" : "border-border bg-surface-2/50 hover:bg-surface-3/60"
-                }`}
+                className="grid cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-border bg-surface-2/50 p-2 transition-colors hover:bg-surface-3/60"
               >
                 <img
                   src={product.image}
@@ -124,7 +114,7 @@ export function OrderPanel({
                 <div className="min-w-0">
                   <p className="truncate text-sm font-bold">{product.name}</p>
                   {labels.length > 0 && (
-                    <p className="truncate text-[11px] text-muted-foreground">
+                    <p className="text-[11px] leading-snug text-muted-foreground">
                       {labels.join(" • ")}
                     </p>
                   )}
@@ -166,23 +156,13 @@ export function OrderPanel({
           })}
         </div>
 
-        <div className="min-h-0 shrink space-y-3 overflow-y-auto pos-scroll pt-3">
+        <div className="shrink-0 pt-3">
           <input
             value={notes}
             onChange={(e) => onNotesChange(e.target.value)}
             placeholder="ملاحظات على الطلب ..."
             className="h-11 w-full rounded-xl border border-border bg-surface-2/60 px-3 text-sm outline-none placeholder:text-muted-foreground focus:border-brand/60"
           />
-
-          {selectedLine && (
-            <div className="max-h-none overflow-y-auto pos-scroll">
-              <ModifierPanel
-                line={selectedLine}
-                onToggle={onToggleModifier}
-                onClose={onCloseModifiers}
-              />
-            </div>
-          )}
         </div>
       </div>
 

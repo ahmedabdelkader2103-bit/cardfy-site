@@ -1,4 +1,4 @@
-import { Check, X } from "lucide-react";
+import { Check } from "lucide-react";
 import { modifierGroups } from "@/lib/pos-data";
 import { egp } from "@/lib/pos-data";
 import { getProduct, type OrderLine } from "@/lib/pos-order";
@@ -6,11 +6,9 @@ import { getProduct, type OrderLine } from "@/lib/pos-order";
 export function ModifierPanel({
   line,
   onToggle,
-  onClose,
 }: {
   line: OrderLine;
   onToggle: (groupId: string, optionId: string) => void;
-  onClose: () => void;
 }) {
   const product = getProduct(line.productId);
   const groups = product.groups.flatMap((g) => {
@@ -37,19 +35,7 @@ export function ModifierPanel({
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="hidden text-xs font-bold text-muted-foreground sm:block">
-            إضافات المنتج المحدد
-          </span>
-          <button
-            type="button"
-            aria-label="إغلاق الإضافات"
-            onClick={onClose}
-            className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface-2 text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+        <span className="text-xs font-bold text-muted-foreground">خيارات وإضافات المنتج</span>
       </div>
 
       {groups.length === 0 ? (

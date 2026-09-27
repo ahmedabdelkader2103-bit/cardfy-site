@@ -3,31 +3,67 @@ import {toast,Toaster} from "sonner";
 import {PosHeader} from "@/components/pos/PosHeader";
 import {ProductArea} from "@/components/pos/ProductArea";
 import {OrderPanel,type OrderType} from "@/components/pos/OrderPanel";
+import {ProductConfiguratorDialog} from "@/components/pos/ProductConfiguratorDialog";
 import {AddressDialog,emptyCustomer,type CustomerInfo} from "@/components/pos/AddressDialog";
 import {PaymentDialog} from "@/integration/PaymentDialog";
 import {ReceiptDialog} from "@/integration/ReceiptDialog";
 import {deliveryZones,modifierGroups,type Product} from "@/lib/pos-data";
-import {defaultSelections,lineTotal,signature,type OrderLine,type Selections} from "@/lib/pos-order";
+import {emptySelections,getProduct,hasRequiredSelections,lineTotal,selectionIssues,signature,type OrderLine} from "@/lib/pos-order";
 import type {PosServices} from "@/integration/types";
 
-let counter=0;const newId=()=>`line-${++counter}`;
+let counter=0;
+const newId=()=>`line-${++counter}`;
+type ConfiguratorState={mode:"add"|"edit";line:OrderLine};
+
+function applyConfiguredLine(lines:OrderLine[],draft:OrderLine,mode:ConfiguratorState["mode"]){
+ const draftSignature=signature(draft.productId,draft.selections);
+ const twin=lines.find(line=>(mode==="add"||line.id!==draft.id)&&signature(line.productId,line.selections)===draftSignature);
+ if(twin)return lines.filter(line=>mode!=="edit"||line.id!==draft.id).map(line=>line.id===twin.id?{...line,quantity:line.quantity+draft.quantity}:line);
+ return mode==="edit"?lines.map(line=>line.id===draft.id?draft:line):[...lines,draft];
+}
+
 export function App({services}:{services:PosServices}){
  const settings=services.snapshot.catalog.settings||{},deliveryEnabled=Boolean(settings.delivery_enabled),draftKey=`cardfy_pos_draft:${services.context.client_id}:${services.branchId}`;
  const saved=useMemo(()=>{try{return JSON.parse(sessionStorage.getItem(draftKey)||"null")}catch{return null}},[draftKey]);
  const initialType:OrderType=saved?.orderType==="delivery"&&deliveryEnabled?"delivery":"pickup";
  const [orderType,setOrderType]=useState<OrderType>(initialType);
- const [lines,setLines]=useState<OrderLine[]>(Array.isArray(saved?.lines)?saved.lines:[]),[selectedLineId,setSelectedLineId]=useState<string|null>(null),[notes,setNotes]=useState(typeof saved?.notes==="string"?saved.notes:""),[customer,setCustomer]=useState<CustomerInfo>(saved?.customer||emptyCustomer),[addressOpen,setAddressOpen]=useState(false),[paymentOpen,setPaymentOpen]=useState(false),[busy,setBusy]=useState(false),[headerQuery,setHeaderQuery]=useState(""),[receipt,setReceipt]=useState<any>(null);
- const selectedLine=lines.find(l=>l.id===selectedLineId)||null,subtotal=useMemo(()=>lines.reduce((sum,l)=>sum+lineTotal(l),0),[lines]),zone=deliveryZones.find(z=>z.id===customer.zoneId)||null,deliveryFee=orderType==="delivery"&&zone?zone.fee:0;
- const pendingCount=(services.snapshot.orders||[]).filter((o:any)=>o.order_type!=="dinein"&&!['completed','cancelled','delivered','on_the_way'].includes(o.status)&&!o.assigned_driver_id).length;
- const methods=(settings.payment_methods||['cash']).filter((m:string)=>orderType==="delivery"?['pay_on_delivery','cash'].includes(m):['cash','card_at_venue'].includes(m));
- const addProduct=(product:Product)=>{const selections=defaultSelections(product),sig=signature(product.id,selections),existing=lines.find(l=>signature(l.productId,l.selections)===sig);if(existing){setLines(p=>p.map(l=>l.id===existing.id?{...l,quantity:l.quantity+1}:l));setSelectedLineId(existing.id);return}const line={id:newId(),productId:product.id,quantity:1,selections};setLines(p=>[...p,line]);setSelectedLineId(line.id)};
- const changeQuantity=(id:string,delta:number)=>setLines(prev=>prev.flatMap(l=>{if(l.id!==id)return[l];const quantity=l.quantity+delta;if(quantity<=0){if(selectedLineId===id)setSelectedLineId(null);return[]}return[{...l,quantity}]}));
- const removeLine=(id:string)=>{setLines(p=>p.filter(l=>l.id!==id));if(selectedLineId===id)setSelectedLineId(null)};
- const clearAll=()=>{setLines([]);setSelectedLineId(null);setNotes("");sessionStorage.removeItem(draftKey)};
- const toggleModifier=(groupId:string,optionId:string)=>{if(!selectedLine)return;const group=modifierGroups[groupId];if(!group)return;const current=selectedLine.selections[groupId]||[];let next:string[];if(group.multi)next=current.includes(optionId)?current.filter(id=>id!==optionId):(current.length>=group.max?current:[...current,optionId]);else next=current.includes(optionId)&&!group.required?[]:[optionId];const selections:Selections={...selectedLine.selections,[groupId]:next},sig=signature(selectedLine.productId,selections);setLines(prev=>{const twin=prev.find(l=>l.id!==selectedLine.id&&signature(l.productId,l.selections)===sig);if(twin){setSelectedLineId(twin.id);return prev.filter(l=>l.id!==selectedLine.id).map(l=>l.id===twin.id?{...l,quantity:l.quantity+selectedLine.quantity}:l)}return prev.map(l=>l.id===selectedLine.id?{...l,selections}:l)})};
- const validate=()=>{for(const line of lines){for(const gid of Object.keys(line.selections)){const g=modifierGroups[gid],count=line.selections[gid].length;if(g&&(count<g.min||count>g.max)){setSelectedLineId(line.id);throw new Error(`راجع اختيارات ${g.name}.`)}}}if(orderType==="delivery"&&(!customer.name.trim()||!customer.phone.trim()||!customer.zoneId||!customer.address.trim())){setAddressOpen(true);throw new Error("أكمل بيانات التوصيل قبل إتمام الطلب.")}if(!methods.length)throw new Error("لا توجد طريقة دفع مفعّلة لهذا النوع من الطلبات.")};
- const payload=(payment_method:string)=>({order_type:orderType==="pickup"?"takeaway":"delivery",source:"pos",branch_id:services.branchId,payment_method,customer_name:orderType==="delivery"?customer.name:"",phone:orderType==="delivery"?customer.phone:"",delivery_zone_id:orderType==="delivery"?customer.zoneId:"",address:orderType==="delivery"?customer.address:"",notes:[notes,orderType==="delivery"&&customer.notes?`ملاحظات التوصيل: ${customer.notes}`:""].filter(Boolean).join("\n"),table_id:"",coupon_code:"",items:lines.map(line=>{const variant=Object.entries(line.selections).find(([gid])=>modifierGroups[gid]?.kind==="variant")?.[1]?.[0]||"";const option_ids=Object.entries(line.selections).filter(([gid])=>modifierGroups[gid]?.kind==="option").flatMap(([,ids])=>ids);return{product_id:line.productId,quantity:line.quantity,variant_id:variant,option_ids,notes:""}})});
+ const [lines,setLines]=useState<OrderLine[]>(Array.isArray(saved?.lines)?saved.lines:[]),[notes,setNotes]=useState(typeof saved?.notes==="string"?saved.notes:""),[customer,setCustomer]=useState<CustomerInfo>(saved?.customer||emptyCustomer),[addressOpen,setAddressOpen]=useState(false),[paymentOpen,setPaymentOpen]=useState(false),[busy,setBusy]=useState(false),[headerQuery,setHeaderQuery]=useState(""),[receipt,setReceipt]=useState<any>(null),[configurator,setConfigurator]=useState<ConfiguratorState|null>(null),[configBusy,setConfigBusy]=useState(false);
+ const subtotal=useMemo(()=>lines.reduce((sum,line)=>sum+lineTotal(line),0),[lines]),zone=deliveryZones.find(item=>item.id===customer.zoneId)||null,deliveryFee=orderType==="delivery"&&zone?zone.fee:0;
+ const pendingCount=(services.snapshot.orders||[]).filter((order:any)=>order.order_type!=="dinein"&&!['completed','cancelled','delivered','on_the_way'].includes(order.status)&&!order.assigned_driver_id).length;
+ const methods=(settings.payment_methods||['cash']).filter((method:string)=>orderType==="delivery"?['pay_on_delivery','cash'].includes(method):['cash','card_at_venue'].includes(method));
+
+ const addProduct=(product:Product)=>{
+  const line={id:newId(),productId:product.id,quantity:1,selections:emptySelections(product)};
+  if(hasRequiredSelections(product)){setConfigurator({mode:"add",line});return}
+  setLines(current=>applyConfiguredLine(current,line,"add"));
+ };
+ const editProduct=(id:string)=>{const line=lines.find(item=>item.id===id);if(line)setConfigurator({mode:"edit",line:{...line,selections:Object.fromEntries(Object.entries(line.selections).map(([key,value])=>[key,[...value]]))}})};
+ const changeQuantity=(id:string,delta:number)=>setLines(previous=>previous.flatMap(line=>{if(line.id!==id)return[line];const quantity=line.quantity+delta;return quantity<=0?[]:[{...line,quantity}]}));
+ const removeLine=(id:string)=>setLines(previous=>previous.filter(line=>line.id!==id));
+ const clearAll=()=>{setLines([]);setNotes("");setConfigurator(null);sessionStorage.removeItem(draftKey)};
+ const toggleConfigurator=(groupId:string,optionId:string)=>setConfigurator(current=>{
+  if(!current)return current;
+  const group=modifierGroups[groupId];if(!group)return current;
+  const selected=current.line.selections[groupId]||[];
+  let next:string[];
+  if(group.multi)next=selected.includes(optionId)?selected.filter(id=>id!==optionId):(selected.length>=group.max?selected:[...selected,optionId]);
+  else next=selected.includes(optionId)&&!group.required?[]:[optionId];
+  return{...current,line:{...current.line,selections:{...current.line.selections,[groupId]:next}}};
+ });
+ const payload=(payment_method:string,orderLines:OrderLine[]=lines)=>({order_type:orderType==="pickup"?"takeaway":"delivery",source:"pos",branch_id:services.branchId,payment_method,customer_name:orderType==="delivery"?customer.name:"",phone:orderType==="delivery"?customer.phone:"",delivery_zone_id:orderType==="delivery"?customer.zoneId:"",address:orderType==="delivery"?customer.address:"",notes:[notes,orderType==="delivery"&&customer.notes?`ملاحظات التوصيل: ${customer.notes}`:""].filter(Boolean).join("\n"),table_id:"",coupon_code:"",items:orderLines.map(line=>{const variant=Object.entries(line.selections).find(([groupId])=>modifierGroups[groupId]?.kind==="variant")?.[1]?.[0]||"";const option_ids=Object.entries(line.selections).filter(([groupId])=>modifierGroups[groupId]?.kind==="option").flatMap(([,ids])=>ids);return{product_id:line.productId,quantity:line.quantity,variant_id:variant,option_ids,notes:""}})});
+ const confirmConfigurator=async()=>{
+  if(!configurator||selectionIssues(configurator.line).length)return;
+  const nextLines=applyConfiguredLine(lines,configurator.line,configurator.mode);
+  setConfigBusy(true);
+  try{
+   await services.rpc('cfy_os_pos_quote',{p_token:services.context.token,p_page:'takeaway',p_order:payload(methods[0]||'cash',nextLines)});
+   setLines(nextLines);setConfigurator(null);toast.success(configurator.mode==="add"?"تمت إضافة المنتج":"تم تحديث المنتج");
+  }catch(error:any){toast.error(error.message||"تعذر مراجعة سعر المنتج.")}
+  finally{setConfigBusy(false)}
+ };
+ const validate=()=>{for(const line of lines){const product=getProduct(line.productId);for(const groupId of product.groups){const group=modifierGroups[groupId],count=(line.selections[groupId]||[]).length;if(group&&(count<group.min||count>group.max)){editProduct(line.id);throw new Error(`راجع اختيارات ${group.name}.`)}}}if(orderType==="delivery"&&(!customer.name.trim()||!customer.phone.trim()||!customer.zoneId||!customer.address.trim())){setAddressOpen(true);throw new Error("أكمل بيانات التوصيل قبل إتمام الطلب.")}if(!methods.length)throw new Error("لا توجد طريقة دفع مفعّلة لهذا النوع من الطلبات.")};
  const beginComplete=()=>{try{validate();setPaymentOpen(true)}catch(error:any){toast.error(error.message)}};
  const submit=async(method:string)=>{setBusy(true);try{const order=payload(method);await services.rpc('cfy_os_pos_quote',{p_token:services.context.token,p_page:'takeaway',p_order:order});const result=await services.rpc('cfy_os_pos_order',{p_token:services.context.token,p_page:'takeaway',p_order:order,p_intent:'save',p_request_key:crypto.randomUUID()});setPaymentOpen(false);clearAll();setCustomer(emptyCustomer);setReceipt(result);services.status(`تم إنشاء ${result.reference} وإرساله إلى محضّر الطلب.`);toast.success(`تم إنشاء ${result.reference}`)}catch(error:any){services.status(error.message||"تعذر إنشاء الطلب.",true);toast.error(error.message||"تعذر إنشاء الطلب.")}finally{setBusy(false)}};
- return <div className="flex min-h-screen flex-col bg-background lg:h-screen lg:overflow-hidden"><PosHeader actorName={services.context.name||"CARDfy"} actorRole={services.context.role==='owner'?"مالك المطعم":"موظف المطعم"} pendingCount={pendingCount} onMenu={services.onMenu} onBell={services.onBell} onSearch={setHeaderQuery}/><main className="grid min-h-0 flex-1 gap-3 p-3 sm:gap-4 sm:p-4 lg:grid-cols-[minmax(0,1fr)_25rem] xl:grid-cols-[minmax(0,1fr)_28rem]"><ProductArea onAdd={addProduct} externalQuery={headerQuery}/><OrderPanel orderType={orderType} onOrderTypeChange={type=>type!=="delivery"||deliveryEnabled?setOrderType(type):undefined} lines={lines} selectedLine={selectedLine} onSelectLine={id=>setSelectedLineId(id===selectedLineId?null:id)} onQuantity={changeQuantity} onRemove={removeLine} onClearAll={clearAll} onToggleModifier={toggleModifier} onCloseModifiers={()=>setSelectedLineId(null)} notes={notes} onNotesChange={setNotes} subtotal={subtotal} deliveryFee={deliveryFee} zoneName={zone?.name||null} hasAddress={Boolean(customer.address)} onOpenAddress={()=>setAddressOpen(true)} onSaveOrder={()=>{sessionStorage.setItem(draftKey,JSON.stringify({lines,notes,customer,orderType}));toast.success("تم حفظ الطلب مؤقتاً")}} onComplete={beginComplete} deliveryEnabled={deliveryEnabled}/></main><footer className="hidden items-center justify-between gap-2 border-t border-border/70 px-5 py-2 text-xs text-muted-foreground lg:flex"><span className="font-bold"><bdi dir="ltr">CARD<span className="text-brand">fy</span> Restaurant POS</bdi></span><span>كل شيء في مكان واحد .. إدارة أسهل .. مطعم أكثر نجاحاً</span></footer><AddressDialog open={addressOpen} onOpenChange={setAddressOpen} value={customer} onSave={info=>{setCustomer(info);setAddressOpen(false);toast.success("تم حفظ بيانات التوصيل")}}/><PaymentDialog open={paymentOpen} onOpenChange={setPaymentOpen} methods={methods} busy={busy} onConfirm={submit}/>{receipt&&<ReceiptDialog result={receipt} handoffHtml={services.customerHandoff(receipt)} onClose={()=>setReceipt(null)}/>}<Toaster richColors position="top-center" dir="rtl"/></div>;
+
+ return <div className="flex min-h-screen flex-col bg-background lg:h-screen lg:overflow-hidden"><PosHeader actorName={services.context.name||"CARDfy"} actorRole={services.context.role==='owner'?"مالك المطعم":"موظف المطعم"} pendingCount={pendingCount} onMenu={services.onMenu} onBell={services.onBell} onSearch={setHeaderQuery}/><main className="grid min-h-0 flex-1 gap-3 p-3 sm:gap-4 sm:p-4 lg:grid-cols-[minmax(0,1fr)_25rem] xl:grid-cols-[minmax(0,1fr)_28rem]"><ProductArea onAdd={addProduct} externalQuery={headerQuery}/><OrderPanel orderType={orderType} onOrderTypeChange={type=>type!=="delivery"||deliveryEnabled?setOrderType(type):undefined} lines={lines} onSelectLine={editProduct} onQuantity={changeQuantity} onRemove={removeLine} onClearAll={clearAll} notes={notes} onNotesChange={setNotes} subtotal={subtotal} deliveryFee={deliveryFee} zoneName={zone?.name||null} hasAddress={Boolean(customer.address)} onOpenAddress={()=>setAddressOpen(true)} onSaveOrder={()=>{sessionStorage.setItem(draftKey,JSON.stringify({lines,notes,customer,orderType}));toast.success("تم حفظ الطلب مؤقتاً")}} onComplete={beginComplete} deliveryEnabled={deliveryEnabled}/></main><footer className="hidden items-center justify-between gap-2 border-t border-border/70 px-5 py-2 text-xs text-muted-foreground lg:flex"><span className="font-bold"><bdi dir="ltr">CARD<span className="text-brand">fy</span> Restaurant POS</bdi></span><span>كل شيء في مكان واحد .. إدارة أسهل .. مطعم أكثر نجاحاً</span></footer><ProductConfiguratorDialog open={Boolean(configurator)} line={configurator?.line||null} busy={configBusy} onOpenChange={open=>!open&&setConfigurator(null)} onToggle={toggleConfigurator} onConfirm={confirmConfigurator}/><AddressDialog open={addressOpen} onOpenChange={setAddressOpen} value={customer} onSave={info=>{setCustomer(info);setAddressOpen(false);toast.success("تم حفظ بيانات التوصيل")}}/><PaymentDialog open={paymentOpen} onOpenChange={setPaymentOpen} methods={methods} busy={busy} onConfirm={submit}/>{receipt&&<ReceiptDialog result={receipt} handoffHtml={services.customerHandoff(receipt)} onClose={()=>setReceipt(null)}/>}<Toaster richColors position="top-center" dir="rtl"/></div>;
 }

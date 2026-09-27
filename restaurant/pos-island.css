@@ -6,7 +6,8 @@ body.lovable-pos-active.lovable-nav-open #osNav a{display:block;width:100%;flex:
 body.lovable-pos-active .os-main{margin:0!important;padding:0!important;max-width:none!important}
 body.lovable-pos-active #osContent{padding:0!important;margin:0!important;max-width:none!important}
 body.lovable-pos-active #osStatus{position:fixed;z-index:90;bottom:1rem;left:1rem;right:auto;max-width:min(30rem,calc(100vw - 2rem))}
-#lovablePosRoot{min-height:100vh;max-width:100%;direction:rtl;font-family:"Cairo",ui-sans-serif,system-ui,sans-serif;color:oklch(0.96 0.006 80)}
+#lovablePosRoot,.lovable-product-configurator{font-family:"Cairo",ui-sans-serif,system-ui,sans-serif;color:oklch(0.96 0.006 80)}
+#lovablePosRoot{min-height:100vh;max-width:100%;direction:rtl}
 #lovablePosRoot .text-xs{font-size:.75rem;line-height:1.3333333333}
 #lovablePosRoot .text-sm{font-size:.875rem;line-height:1.4285714286}
 #lovablePosRoot .text-base{font-size:1rem;line-height:1.5}
@@ -15,5 +16,11 @@ body.lovable-pos-active #osStatus{position:fixed;z-index:90;bottom:1rem;left:1re
 #lovablePosRoot .font-semibold{font-weight:600}
 #lovablePosRoot .font-bold{font-weight:700}
 #lovablePosRoot .font-extrabold{font-weight:800}
+.lovable-product-configurator .text-xs{font-size:.75rem;line-height:1.3333333333}
+.lovable-product-configurator .text-sm{font-size:.875rem;line-height:1.4285714286}
+.lovable-product-configurator .text-base{font-size:1rem;line-height:1.5}
+.lovable-product-configurator .font-semibold{font-weight:600}
+.lovable-product-configurator .font-bold{font-weight:700}
+.lovable-product-configurator .font-extrabold{font-weight:800}
 .pos-branch-dialog form{display:grid;gap:1rem;min-width:min(26rem,calc(100vw - 3rem))}
 @media (min-width:64rem){body.lovable-pos-active{overflow:hidden}}
