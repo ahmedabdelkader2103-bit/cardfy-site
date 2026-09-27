@@ -1,4 +1,4 @@
-import {$,context,rpc,run,status,escapeHTML as esc} from './shared.js?v=20260922-pos-ui';
+import {$,context,rpc,run,status,escapeHTML as esc} from './shared.js?v=20260926-lovable-pos';
 
 let snapshot;
 let filter='all';

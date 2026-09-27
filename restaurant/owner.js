@@ -1,5 +1,5 @@
-import {$,rpc,run,status,money,escapeHTML as esc,dateFilters,bindPeriods,filterArgs} from './shared.js?v=20260922-pos-ui';
-import {ownerModel,filterAlerts,safeOwnerRoute,actionLabel,operationLabel,severityLabel,kindLabel} from './owner-data.js?v=20260922-pos-ui';
+import {$,rpc,run,status,money,escapeHTML as esc,dateFilters,bindPeriods,filterArgs} from './shared.js?v=20260926-lovable-pos';
+import {ownerModel,filterAlerts,safeOwnerRoute,actionLabel,operationLabel,severityLabel,kindLabel} from './owner-data.js?v=20260926-lovable-pos';
 
 let page='owner',actor,model={},filters={severity:'',kind:'',query:''};
 const num=value=>Number(value)||0;

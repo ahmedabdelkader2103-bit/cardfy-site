@@ -1,4 +1,4 @@
-import {$,context,rpc,status} from './shared.js?v=20260922-pos-ui';
+import {$,context,rpc,status} from './shared.js?v=20260926-lovable-pos';
 import {customerHandoff} from './customer-handoff.mjs?v=20260926-lovable-pos';
 
 const branchKey=()=>`cardfy_os_branch:${context.client_id}:${context.id||'owner'}:takeaway`;
