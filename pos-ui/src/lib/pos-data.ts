@@ -7,7 +7,10 @@ export const categories:Array<{id:string;name:string}>=[{id:"all",name:"الكل
 export const products:Product[]=[];
 export const modifierGroups:Record<string,ModifierGroup>={};
 export const deliveryZones:DeliveryZone[]=[];
-const safeImage=(v:unknown)=>/^https:\/\//i.test(String(v||""))?String(v):banner;
+const safeImage=(v:unknown)=>{
+ const value=String(v||"").trim();
+ return /^(?:https:\/\/|\/(?!\/)|data:image\/(?:png|jpe?g|webp|gif);base64,)/i.test(value)?value:banner;
+};
 export function hydrateCatalog(catalog:any,branchId:string){
  categories.splice(1,categories.length,...(catalog.categories||[]).map((c:any)=>({id:c.id,name:c.name_ar||c.name_en||"قسم"})));
  products.splice(0);deliveryZones.splice(0);Object.keys(modifierGroups).forEach(k=>delete modifierGroups[k]);
