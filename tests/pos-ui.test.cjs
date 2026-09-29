@@ -3,7 +3,7 @@ const root=path.join(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,p),'
 const wrapper=read('restaurant/pos.js'),app=read('restaurant/app.js'),html=read('restaurant/index.html'),react=read('pos-ui/src/App.tsx'),data=read('pos-ui/src/lib/pos-data.ts'),header=read('pos-ui/src/components/pos/PosHeader.tsx'),island=read('restaurant/pos-island.css');
 const product=read('pos-ui/src/components/pos/ProductArea.tsx'),order=read('pos-ui/src/components/pos/OrderPanel.tsx'),configurator=read('pos-ui/src/components/pos/ProductConfiguratorDialog.tsx'),orderLogic=read('pos-ui/src/lib/pos-order.ts');
 const payment=read('pos-ui/src/integration/PaymentDialog.tsx');
-test('Takeaway mounts the direct Lovable React island while Dine-in stays separate',()=>{assert.match(app,/page==='takeaway'.+pos\.js\?v=20260926-lovable-pos/);assert.match(app,/page==='dinein'.+pos-dinein\.js/);assert.match(wrapper,/import\('\.\/pos-ui\/entry\.js/);assert.match(html,/pos-island\.css\?v=20260926-lovable-pos/);assert.ok(fs.existsSync(path.join(root,'restaurant','pos-ui','entry.js')));assert.ok(fs.existsSync(path.join(root,'restaurant','pos-ui','main.css')))});
+test('Takeaway mounts the direct Lovable React island while Dine-in stays separate',()=>{assert.match(app,/page==='takeaway'.+pos\.js\?v=20260929-delivery-flow/);assert.match(app,/page==='dinein'.+pos-dinein\.js/);assert.match(wrapper,/import\('\.\/pos-ui\/entry\.js/);assert.match(html,/pos-island\.css\?v=20260926-lovable-pos/);assert.ok(fs.existsSync(path.join(root,'restaurant','pos-ui','entry.js')));assert.ok(fs.existsSync(path.join(root,'restaurant','pos-ui','main.css')))});
 test('production catalog replaces Lovable mock products and delivery zones',()=>{assert.match(wrapper,/cfy_os_operational_snapshot/);assert.match(data,/catalog\.categories/);assert.match(data,/catalog\.products/);assert.match(data,/catalog\.delivery_zones/);assert.match(data,/data:image\\\/\(\?:png\|jpe\?g\|webp\|gif\);base64/);assert.match(data,/\?value:banner/);assert.doesNotMatch(data,/ساندوتش شاورما فراخ|وسط البلد|مدينة نصر|id:\s*"p1"/);assert.match(react,/variant_id/);assert.match(react,/option_ids/);assert.match(react,/branch_id:services\.branchId/)});
 test('branch context resolves before rendering and never appears inside the Lovable island',()=>{assert.match(wrapper,/chooseBranch\(snapshot\.branches,snapshot\.actor\)/);assert.match(wrapper,/context\.default_branch_id\|\|actor\?\.default_branch_id/);assert.match(wrapper,/اختر الفرع/);assert.ok(wrapper.indexOf('chooseBranch')<wrapper.indexOf("import('./pos-ui/entry.js"));assert.doesNotMatch(react,/اختر الفرع|Branch Selector/)});
 test('payment is confirmed outside the locked layout and orders go to Order Prep',()=>{assert.match(react,/PaymentDialog/);assert.match(react,/settings\.payment_methods/);assert.match(react,/orderType==="delivery"\?\['pay_on_delivery','cash'\]/);assert.match(react,/cfy_os_pos_quote/);assert.match(react,/cfy_os_pos_order/);assert.match(react,/p_intent:'save'/);assert.doesNotMatch(react,/p_intent:'(?:kitchen|pay)'/);assert.match(read('pos-ui/src/integration/PaymentDialog.tsx'),/methods\.length===1\?methods\[0\]:""/)});
@@ -25,5 +25,11 @@ test('delivery flow matches backend validation and does not quote configured pro
  assert.ok(address.includes('value.address.trim().length >= 5'));
  assert.ok(react.includes('delivery_zone_required'));
  assert.ok(react.includes('delivery_details_required'));
+ assert.match(wrapper,/entry\.js\?v=20260929-delivery-flow/);
+});
+
+test('delivery fix cache-busts the full browser module chain',()=>{
+ assert.match(html,/app\.js\?v=20260929-delivery-flow/);
+ assert.match(app,/pos\.js\?v=20260929-delivery-flow/);
  assert.match(wrapper,/entry\.js\?v=20260929-delivery-flow/);
 });
