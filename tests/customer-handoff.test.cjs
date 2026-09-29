@@ -24,20 +24,18 @@ test('Customer QR decodes to the exact same private tracking URL as the link',as
   assert.equal(dom.window.document.querySelector('img'),null); // No external QR service.
   dom.window.close();
 });
-test('POS save and customer receipt expose matching handoff without recording payment',async()=>{
+test('POS receipt integration preserves the private customer handoff and safe print contract',async()=>{
   const {customerHandoff}=await handoff();
-  const dom=new JSDOM('<div id="osStatus"></div>',{url:'https://cardfy.example/restaurant/',runScripts:'outside-only'}),w=dom.window;
-  w.esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));w.money=v=>String(v);w.customerHandoff=r=>customerHandoff(r,w.location.origin);
-  w.HTMLDialogElement.prototype.showModal=function(){this.open=true};
-  let printed='',printCount=0;w.open=()=>({document:{write:text=>printed=text,close(){}},print:()=>printCount++});
-  w.eval(fs.readFileSync(path.join(root,'restaurant/pos.js'),'utf8').replace(/^import .*;\r?\n/gm,'').replace(/export /g,''));
-  w.receipt(order,false);
-  const dialog=w.document.querySelector('dialog');assert.equal(dialog.querySelector('h2').textContent,'تم حفظ الطلب');
-  assert.ok(dialog.textContent.includes('123456'));
-  dialog.querySelector('.primary').click();
-  assert.equal(printCount,1);assert.equal(new JSDOM(printed).window.document.querySelector('a').href,dialog.querySelector('a').href);
-  assert.equal(customerHandoff({...order,tracking_token:null},w.location.origin),'');
-  const attack=new JSDOM(customerHandoff({...order,reference:'<img src=x onerror=alert(1)>',tracking_token:'" onclick="alert(1)'},w.location.origin));
+  const receipt=fs.readFileSync(path.join(root,'pos-ui/src/integration/ReceiptDialog.tsx'),'utf8');
+  const app=fs.readFileSync(path.join(root,'pos-ui/src/App.tsx'),'utf8');
+  assert.match(app,/handoffHtml=\{services\.customerHandoff\(receipt\)\}/);
+  assert.match(receipt,/dangerouslySetInnerHTML=\{\{__html:handoffHtml\}\}/);
+  assert.match(receipt,/win\.document\.write\(.+\$\{handoffHtml\}/);
+  const dom=new JSDOM(customerHandoff(order,'https://cardfy.example'));
+  assert.ok(dom.window.document.body.textContent.includes('123456'));
+  assert.equal(dom.window.document.querySelector('a').href,'https://cardfy.example/menu/track/?ref=MN-TEST&token=test-customer-token');
+  assert.equal(customerHandoff({...order,tracking_token:null},'https://cardfy.example'),'');
+  const attack=new JSDOM(customerHandoff({...order,reference:'<img src=x onerror=alert(1)>',tracking_token:'" onclick="alert(1)'},'https://cardfy.example'));
   assert.equal(attack.window.document.querySelector('[onclick],img'),null);
   dom.window.close();attack.window.close();
 });
