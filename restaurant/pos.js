@@ -14,5 +14,5 @@ function installStylesheet(){if(document.querySelector('link[data-lovable-pos]')
 export async function mountPOS(page){
  const snapshot=await rpc('cfy_os_operational_snapshot',{p_token:context.token,p_page:page});if(!snapshot.branches?.length)throw new Error('لا يوجد فرع متاح لهذه الجلسة.');
  const branchId=await chooseBranch(snapshot.branches,snapshot.actor);installStylesheet();document.body.classList.add('lovable-pos-active','os-collapsed');const host=$('#osContent');host.innerHTML='<div id="lovablePosRoot"></div>';
- const island=await import('./pos-ui/entry.js?v=20260926');island.mount($('#lovablePosRoot'),{context,snapshot,branchId,rpc,status,customerHandoff,onMenu:()=>document.body.classList.toggle('lovable-nav-open'),onBell:()=>{location.href=`/restaurant/?page=prep${context.role==='owner'?'':'&as=staff'}`;}});status('');
+ const island=await import('./pos-ui/entry.js?v=20260929-delivery-flow');island.mount($('#lovablePosRoot'),{context,snapshot,branchId,rpc,status,customerHandoff,onMenu:()=>document.body.classList.toggle('lovable-nav-open'),onBell:()=>{location.href=`/restaurant/?page=prep${context.role==='owner'?'':'&as=staff'}`;}});status('');
 }

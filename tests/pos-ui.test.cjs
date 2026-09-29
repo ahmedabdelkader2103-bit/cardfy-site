@@ -15,3 +15,15 @@ test('order note follows the product list and configurator scrolls responsively'
 test('takeaway completion asks only for payment and resets after confirmed creation',()=>{assert.doesNotMatch(payment,/اسم العميل|رقم الهاتف|requireCustomerDetails/);assert.match(react,/orderType==="delivery"\?\{customer_name:customer\.name,phone:customer\.phone,delivery_zone_id:customer\.zoneId,address:customer\.address\}:\{\}/);assert.ok(react.indexOf("await services.rpc('cfy_os_pos_order'")<react.indexOf('clearAll();setCustomer(emptyCustomer)'));assert.match(react,/setPaymentOpen\(false\);setAddressOpen\(false\);clearAll\(\);setCustomer\(emptyCustomer\)/)});
 test('checkout reuses one idempotency key across uncertain retries and preserves the order on failure',()=>{assert.match(react,/if\(checkout\.busy\)return;checkout\.busy=true/);assert.match(react,/if\(checkout\.fingerprint!==fingerprint\)\{checkout\.fingerprint=fingerprint;checkout\.key=crypto\.randomUUID\(\)\}/);assert.match(react,/p_request_key:checkout\.key/);assert.match(react,/checkout\.key="";checkout\.fingerprint=""/);assert.match(react,/finally\{checkout\.busy=false;setBusy\(false\)\}/);const catchIndex=react.indexOf('catch(error:any)');assert.ok(catchIndex>0);assert.doesNotMatch(react.slice(catchIndex,react.indexOf('finally',catchIndex)),/clearAll|setLines\(\[\]\)|setCustomer\(emptyCustomer\)|checkout\.key=""/)});
 test('approved assets are bundled locally and no mock identity remains',()=>{for(const name of ['brand-banner.jpg','shawarma-chicken.jpg','fries-cheese.jpg'])assert.ok(fs.existsSync(path.join(root,'pos-ui','src','assets',name)));assert.doesNotMatch(header,/أحمد محمد|8 سبتمبر 2026/);assert.doesNotMatch(react,/محاكاة|mock/i)});
+
+test('delivery flow matches backend validation and does not quote configured products before a zone exists',()=>{
+ const address=read('pos-ui/src/components/pos/AddressDialog.tsx');
+ assert.ok(react.includes('if(orderType!=="delivery"||customer.zoneId)await services.rpc(\'cfy_os_pos_quote\''));
+ assert.ok(react.includes('!isValidDeliveryCustomer(customer)'));
+ assert.ok(address.includes('value.name.trim().length >= 2'));
+ assert.ok(address.includes('value.phone.replace(/\\D/g, "").length >= 8'));
+ assert.ok(address.includes('value.address.trim().length >= 5'));
+ assert.ok(react.includes('delivery_zone_required'));
+ assert.ok(react.includes('delivery_details_required'));
+ assert.match(wrapper,/entry\.js\?v=20260929-delivery-flow/);
+});

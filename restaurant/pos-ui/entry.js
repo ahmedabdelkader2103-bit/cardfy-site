@@ -18337,7 +18337,7 @@ function Dx({
   z.useEffect(() => {
     u && m(c);
   }, [u, c]);
-  const p = (S, U) => m((R) => ({ ...R, [S]: U })), v = d.name.trim() && d.phone.trim() && d.zoneId && d.address.trim();
+  const p = (S, U) => m((R) => ({ ...R, [S]: U })), v = d.name.trim().length >= 2 && d.phone.replace(/\D/g, "").length >= 8 && !!d.zoneId && d.address.trim().length >= 5;
   return /* @__PURE__ */ h.jsx(vr, { open: u, onOpenChange: i, children: /* @__PURE__ */ h.jsxs(Tu, { dir: "rtl", className: "max-w-lg border-border bg-surface text-right", children: [
     /* @__PURE__ */ h.jsxs(Uu, { className: "text-right sm:text-right", children: [
       /* @__PURE__ */ h.jsxs(zu, { className: "flex items-center gap-2 text-lg font-extrabold", children: [
@@ -18530,9 +18530,10 @@ function wx({ services: u }) {
     const w = wp(S, k.line, k.mode);
     jt(!0);
     try {
-      await u.rpc("cfy_os_pos_quote", { p_token: u.context.token, p_page: "takeaway", p_order: y(_[0] || "cash", w) }), U(w), mt(null), sn.success(k.mode === "add" ? "تمت إضافة المنتج" : "تم تحديث المنتج");
+      (p !== "delivery" || M.zoneId) && await u.rpc("cfy_os_pos_quote", { p_token: u.context.token, p_page: "takeaway", p_order: y(_[0] || "cash", w) }), U(w), mt(null), sn.success(k.mode === "add" ? "تمت إضافة المنتج" : "تم تحديث المنتج");
     } catch ($) {
-      sn.error($.message || "تعذر مراجعة سعر المنتج.");
+      const G = String($.message || "");
+      sn.error(G.includes("delivery_zone_required") ? "اختار منطقة التوصيل قبل متابعة الطلب." : G.includes("delivery_details_required") ? "راجع بيانات التوصيل: الاسم حرفين على الأقل، رقم الهاتف 8 أرقام على الأقل، والعنوان 5 أحرف على الأقل." : G || "تعذر مراجعة سعر المنتج.");
     } finally {
       jt(!1);
     }
@@ -18545,8 +18546,8 @@ function wx({ services: u }) {
           throw ft(w.id), new Error(`راجع اختيارات ${W.name}.`);
       }
     }
-    if (p === "delivery" && (!M.name.trim() || !M.phone.trim() || !M.zoneId || !M.address.trim()))
-      throw B(!0), new Error("أكمل بيانات التوصيل قبل إتمام الطلب.");
+    if (p === "delivery" && (M.name.trim().length < 2 || M.phone.replace(/\D/g, "").length < 8 || !M.zoneId || M.address.trim().length < 5))
+      throw B(!0), new Error("راجع بيانات التوصيل: الاسم حرفين على الأقل، رقم الهاتف 8 أرقام على الأقل، والعنوان 5 أحرف على الأقل.");
     if (!_.length) throw new Error("لا توجد طريقة دفع مفعّلة لهذا النوع من الطلبات.");
   }, I = () => {
     try {
@@ -18563,7 +18564,8 @@ function wx({ services: u }) {
         const W = await u.rpc("cfy_os_pos_order", { p_token: u.context.token, p_page: "takeaway", p_order: $, p_intent: "save", p_request_key: rt.key });
         rt.key = "", rt.fingerprint = "", Y(!1), B(!1), Jt(), Q(Kp), P(W), u.status(`تم إنشاء ${W.reference} وإرساله إلى محضّر الطلب.`), sn.success(`تم إنشاء ${W.reference}`);
       } catch ($) {
-        u.status($.message || "تعذر إنشاء الطلب.", !0), sn.error($.message || "تعذر إنشاء الطلب.");
+        const G = String($.message || ""), W = G.includes("delivery_zone_required") ? "اختار منطقة التوصيل قبل متابعة الطلب." : G.includes("delivery_details_required") ? "راجع بيانات التوصيل: الاسم حرفين على الأقل، رقم الهاتف 8 أرقام على الأقل، والعنوان 5 أحرف على الأقل." : G || "تعذر إنشاء الطلب.";
+        u.status(W, !0), sn.error(W);
       } finally {
         rt.busy = !1, nt(!1);
       }

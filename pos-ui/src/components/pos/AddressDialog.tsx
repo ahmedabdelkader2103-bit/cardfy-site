@@ -26,6 +26,12 @@ export const emptyCustomer: CustomerInfo = {
   notes: "",
 };
 
+export const isValidDeliveryCustomer = (value: CustomerInfo) =>
+  value.name.trim().length >= 2 &&
+  value.phone.replace(/\D/g, "").length >= 8 &&
+  Boolean(value.zoneId) &&
+  value.address.trim().length >= 5;
+
 export function AddressDialog({
   open,
   onOpenChange,
@@ -44,7 +50,7 @@ export function AddressDialog({
   }, [open, value]);
 
   const set = (key: keyof CustomerInfo, v: string) => setDraft((d) => ({ ...d, [key]: v }));
-  const valid = draft.name.trim() && draft.phone.trim() && draft.zoneId && draft.address.trim();
+  const valid = isValidDeliveryCustomer(draft);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
