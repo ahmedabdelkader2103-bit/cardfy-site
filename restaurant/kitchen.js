@@ -1,4 +1,4 @@
-import {$,context,rpc,run,status,escapeHTML as esc} from './shared.js?v=20260920-pos-ui';
+import {$,context,rpc,run,status,escapeHTML as esc} from './shared.js?v=20260929-delivery-flow';
 
 let snapshot;
 let filter='all';

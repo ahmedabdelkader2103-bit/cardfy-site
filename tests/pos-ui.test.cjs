@@ -1,63 +1,35 @@
-const test=require('node:test');
-const assert=require('node:assert/strict');
-const fs=require('node:fs');
-const path=require('node:path');
-const root=path.join(__dirname,'..');
-const pos=fs.readFileSync(path.join(root,'restaurant','pos.js'),'utf8');
-const legacyDinein=fs.readFileSync(path.join(root,'restaurant','pos-dinein.js'),'utf8');
-const app=fs.readFileSync(path.join(root,'restaurant','app.js'),'utf8');
-const css=fs.readFileSync(path.join(root,'restaurant','pos.css'),'utf8');
-const html=fs.readFileSync(path.join(root,'restaurant','index.html'),'utf8');
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const root=path.join(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
+const wrapper=read('restaurant/pos.js'),app=read('restaurant/app.js'),html=read('restaurant/index.html'),react=read('pos-ui/src/App.tsx'),data=read('pos-ui/src/lib/pos-data.ts'),header=read('pos-ui/src/components/pos/PosHeader.tsx'),island=read('restaurant/pos-island.css');
+const product=read('pos-ui/src/components/pos/ProductArea.tsx'),order=read('pos-ui/src/components/pos/OrderPanel.tsx'),configurator=read('pos-ui/src/components/pos/ProductConfiguratorDialog.tsx'),orderLogic=read('pos-ui/src/lib/pos-order.ts');
+const payment=read('pos-ui/src/integration/PaymentDialog.tsx');
+test('Takeaway mounts the direct Lovable React island while Dine-in stays separate',()=>{assert.match(app,/page==='takeaway'.+pos\.js\?v=20260929-delivery-flow/);assert.match(app,/page==='dinein'.+pos-dinein\.js/);assert.match(wrapper,/import\('\.\/pos-ui\/entry\.js/);assert.match(html,/pos-island\.css\?v=20260926-lovable-pos/);assert.ok(fs.existsSync(path.join(root,'restaurant','pos-ui','entry.js')));assert.ok(fs.existsSync(path.join(root,'restaurant','pos-ui','main.css')))});
+test('production catalog replaces Lovable mock products and delivery zones',()=>{assert.match(wrapper,/cfy_os_operational_snapshot/);assert.match(data,/catalog\.categories/);assert.match(data,/catalog\.products/);assert.match(data,/catalog\.delivery_zones/);assert.match(data,/data:image\\\/\(\?:png\|jpe\?g\|webp\|gif\);base64/);assert.match(data,/\?value:banner/);assert.doesNotMatch(data,/ساندوتش شاورما فراخ|وسط البلد|مدينة نصر|id:\s*"p1"/);assert.match(react,/variant_id/);assert.match(react,/option_ids/);assert.match(react,/branch_id:services\.branchId/)});
+test('branch context resolves before rendering and never appears inside the Lovable island',()=>{assert.match(wrapper,/chooseBranch\(snapshot\.branches,snapshot\.actor\)/);assert.match(wrapper,/context\.default_branch_id\|\|actor\?\.default_branch_id/);assert.match(wrapper,/اختر الفرع/);assert.ok(wrapper.indexOf('chooseBranch')<wrapper.indexOf("import('./pos-ui/entry.js"));assert.doesNotMatch(react,/اختر الفرع|Branch Selector/)});
+test('payment is confirmed outside the locked layout and orders go to Order Prep',()=>{assert.match(react,/PaymentDialog/);assert.match(react,/settings\.payment_methods/);assert.match(react,/orderType==="delivery"\?\['pay_on_delivery','cash'\]/);assert.match(react,/cfy_os_pos_quote/);assert.match(react,/cfy_os_pos_order/);assert.match(react,/p_intent:'save'/);assert.doesNotMatch(react,/p_intent:'(?:kitchen|pay)'/);assert.match(read('pos-ui/src/integration/PaymentDialog.tsx'),/methods\.length===1\?methods\[0\]:""/)});
+test('bell keeps Lovable geometry, uses live pending count and routes to Order Prep',()=>{assert.match(header,/pendingCount/);assert.doesNotMatch(header,/>\s*3\s*</);assert.match(react,/snapshot\.orders/);assert.match(wrapper,/page=prep/);assert.match(header,/className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-surface-2/)});
+test('Lovable visual source and responsive rules remain in the island',()=>{const css=read('pos-ui/src/styles.css');assert.match(css,/--brand:/);assert.match(css,/@import "tailwindcss"/);assert.match(product,/sm:grid-cols-3 xl:grid-cols-4/);assert.match(product,/px-4 py-2\.5 text-sm font-bold/);assert.match(product,/brand-gradient/);assert.match(order,/text-sm font-extrabold/);assert.match(order,/text-lg font-extrabold/);assert.match(order,/lg:min-h-\[6rem\]/);assert.match(order,/brand-gradient/);assert.match(island,/overflow-x:hidden;overflow-y:auto/);assert.match(island,/@media \(min-width:64rem\)\{body\.lovable-pos-active\{overflow:hidden\}\}/);assert.match(island,/font-family:"Cairo"/);assert.match(island,/color:oklch\(0\.96 0\.006 80\)/);assert.match(island,/#lovablePosRoot \.text-sm\{font-size:\.875rem/);assert.match(island,/#lovablePosRoot \.font-bold\{font-weight:700\}/);assert.match(island,/#lovablePosRoot \.font-extrabold\{font-weight:800\}/);assert.match(read('pos-ui/src/components/pos/AddressDialog.tsx'),/ملاحظات التوصيل \(اختياري\)/);assert.match(react,/<bdi dir="ltr">CARD/)});
+test('required products open one validated configurator while optional products add directly',()=>{assert.match(react,/if\(hasRequiredSelections\(product\)\)\{setConfigurator\(\{mode:"add",line\}\);return\}/);assert.match(react,/setLines\(current=>applyConfiguredLine\(current,line,"add"\)\)/);assert.match(configurator,/selectionIssues\(line\)/);assert.match(configurator,/disabled=\{issues\.length>0\|\|busy\}/);assert.match(configurator,/ModifierPanel/);assert.match(react,/cfy_os_pos_quote/);assert.match(product,/hasRequiredSelections\(p\)/);assert.match(product,/اختيار مطلوب/)});
+test('editing updates the same configured line, merges only identical signatures and keeps detailed summary',()=>{assert.match(react,/mode==="edit"\?lines\.map\(line=>line\.id===draft\.id\?draft:line\)/);assert.match(react,/signature\(line\.productId,line\.selections\)===draftSignature/);assert.match(orderLogic,/selectionLabels/);assert.match(order,/labels\.join\(" • "\)/);assert.doesNotMatch(order,/\{labels\.length\}|اختيارات|إضافات\}/);assert.doesNotMatch(order,/ModifierPanel/)});
+test('order note follows the product list and configurator scrolls responsively',()=>{assert.ok(order.indexOf('lines.map')<order.indexOf('placeholder="ملاحظات على الطلب ..."'));assert.match(configurator,/lovable-product-configurator/);assert.match(configurator,/h-\[100dvh\]/);assert.match(configurator,/sm:max-h-\[90vh\]/);assert.match(configurator,/overflow-y-auto pos-scroll/);assert.match(island,/\.lovable-product-configurator\{font-family:"Cairo"/)});
+test('takeaway completion asks only for payment and resets after confirmed creation',()=>{assert.doesNotMatch(payment,/اسم العميل|رقم الهاتف|requireCustomerDetails/);assert.match(react,/orderType==="delivery"\?\{customer_name:customer\.name,phone:customer\.phone,delivery_zone_id:customer\.zoneId,address:customer\.address\}:\{\}/);assert.ok(react.indexOf("await services.rpc('cfy_os_pos_order'")<react.indexOf('clearAll();setCustomer(emptyCustomer)'));assert.match(react,/setPaymentOpen\(false\);setAddressOpen\(false\);clearAll\(\);setCustomer\(emptyCustomer\)/)});
+test('checkout reuses one idempotency key across uncertain retries and preserves the order on failure',()=>{assert.match(react,/if\(checkout\.busy\)return;checkout\.busy=true/);assert.match(react,/if\(checkout\.fingerprint!==fingerprint\)\{checkout\.fingerprint=fingerprint;checkout\.key=crypto\.randomUUID\(\)\}/);assert.match(react,/p_request_key:checkout\.key/);assert.match(react,/checkout\.key="";checkout\.fingerprint=""/);assert.match(react,/finally\{checkout\.busy=false;setBusy\(false\)\}/);const catchIndex=react.indexOf('catch(error:any)');assert.ok(catchIndex>0);assert.doesNotMatch(react.slice(catchIndex,react.indexOf('finally',catchIndex)),/clearAll|setLines\(\[\]\)|setCustomer\(emptyCustomer\)|checkout\.key=""/)});
+test('approved assets are bundled locally and no mock identity remains',()=>{for(const name of ['brand-banner.jpg','shawarma-chicken.jpg','fries-cheese.jpg'])assert.ok(fs.existsSync(path.join(root,'pos-ui','src','assets',name)));assert.doesNotMatch(header,/أحمد محمد|8 سبتمبر 2026/);assert.doesNotMatch(react,/محاكاة|mock/i)});
 
-test('approved Takeaway and Delivery POS stays in the existing CARDfy shell',()=>{
-  assert.match(app,/page==='takeaway'.+\.\/pos\.js\?v=20260920-pos-ui/);
-  assert.match(app,/page==='dinein'.+\.\/pos-dinein\.js\?v=20260920-pos-ui/);
-  assert.match(html,/pos\.css\?v=20260920-pos-ui/);
-  assert.match(html,/<bdi dir="ltr">CARD<span>fy<\/span><\/bdi>/);
-  assert.doesNotMatch(pos,/أحمد محمد|8 سبتمبر 2026|وسط البلد|مدينة نصر/);
-  assert.match(legacyDinein,/مخطط الصالة/);
+test('delivery flow matches backend validation and does not quote configured products before a zone exists',()=>{
+ const address=read('pos-ui/src/components/pos/AddressDialog.tsx');
+ assert.ok(react.includes('if(orderType!=="delivery"||customer.zoneId)await services.rpc(\'cfy_os_pos_quote\''));
+ assert.ok(react.includes('!isValidDeliveryCustomer(customer)'));
+ assert.ok(address.includes('value.name.trim().length >= 2'));
+ assert.ok(address.includes('value.phone.replace(/\\D/g, "").length >= 8'));
+ assert.ok(address.includes('value.address.trim().length >= 5'));
+ assert.ok(react.includes('delivery_zone_required'));
+ assert.ok(react.includes('delivery_details_required'));
+ assert.match(wrapper,/entry\.js\?v=20260929-delivery-flow/);
 });
 
-test('POS renders real catalog and validates real production modifiers',()=>{
-  assert.match(pos,/cfy_os_operational_snapshot/);
-  assert.match(pos,/snapshot\.catalog\.categories/);
-  assert.match(pos,/snapshot\.catalog\.products/);
-  assert.match(pos,/variant_required/);
-  assert.match(pos,/min_select/);
-  assert.match(pos,/max_select/);
-  assert.doesNotMatch(pos,/shawarma-chicken|const products\s*=|deliveryZones\s*=/);
-});
-
-test('complete order persists as new for Order Prep and cannot bypass Kitchen',()=>{
-  assert.match(pos,/p_intent:'save'/);
-  assert.match(pos,/يُرسل الطلب إلى محضّر الطلب أولًا/);
-  assert.match(pos,/حالة الطلب: جديد لدى محضّر الطلب/);
-  assert.doesNotMatch(pos,/p_intent:'(?:kitchen|pay)'/);
-  assert.doesNotMatch(pos,/إرسال للمطبخ/);
-});
-
-test('cart supports click-to-edit and merges only identical configurations',()=>{
-  assert.match(pos,/card\.onclick=.*selectedId/);
-  assert.match(pos,/line\.option_ids/);
-  assert.match(pos,/String\(line\.notes\|\|''\)\.trim\(\)/);
-  assert.match(pos,/const twin=next\.find\(x=>signature\(x\)===signature\(line\)\)/);
-  assert.match(pos,/data-variant/);
-  assert.match(pos,/data-option/);
-});
-
-test('Delivery fields are required while Takeaway clears address and fee inputs',()=>{
-  assert.match(pos,/type!=='delivery'.+delivery_zone_id/);
-  assert.match(pos,/data\.order_type==='delivery'.+customer_name\.trim\(\).+phone\.trim\(\).+delivery_zone_id.+address\.trim\(\)/);
-  assert.match(pos,/snapshot\.catalog\.delivery_zones/);
-  assert.match(pos,/deliveryAllowed=Boolean\(c\.settings\.delivery_enabled\)/);
-  assert.match(pos,/if\(type==='delivery'&&!deliveryAllowed\)return/);
-  assert.doesNotMatch(pos,/name="coupon_code"/);
-});
-
-test('approved POS layout keeps desktop tablet and mobile breakpoints',()=>{
-  assert.match(css,/@media\(max-width:1250px\)/);
-  assert.match(css,/@media\(max-width:900px\)/);
-  assert.match(css,/@media\(max-width:620px\)/);
-  assert.match(css,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
-  assert.match(css,/overflow:auto/);
+test('delivery fix cache-busts the full browser module chain',()=>{
+ assert.match(html,/app\.js\?v=20260929-delivery-flow/);
+ assert.match(app,/pos\.js\?v=20260929-delivery-flow/);
+ assert.match(wrapper,/entry\.js\?v=20260929-delivery-flow/);
 });

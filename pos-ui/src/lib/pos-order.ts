@@ -1,0 +1,11 @@
+import {modifierGroups,products,type Product} from "./pos-data";
+export type Selections=Record<string,string[]>;
+export type OrderLine={id:string;productId:string;quantity:number;selections:Selections};
+export const getProduct=(id:string)=>products.find(p=>p.id===id)!;
+export const emptySelections=(product:Product):Selections=>Object.fromEntries(product.groups.map(id=>[id,[]]));
+export const hasRequiredSelections=(product:Product)=>product.groups.some(id=>{const group=modifierGroups[id];return Boolean(group&&(group.required||group.min>0))});
+export const selectionIssues=(line:OrderLine)=>getProduct(line.productId).groups.flatMap(id=>{const group=modifierGroups[id],count=(line.selections[id]||[]).length;return group&&(count<group.min||count>group.max)?[group.name]:[]});
+export const signature=(productId:string,selections:Selections)=>productId+"|"+Object.keys(selections).sort().map(g=>`${g}:${[...(selections[g]||[])].sort().join(",")}`).join("|");
+export const unitPrice=(line:OrderLine)=>getProduct(line.productId).price+Object.entries(line.selections).reduce((sum,[gid,ids])=>sum+ids.reduce((n,id)=>n+(modifierGroups[gid]?.options.find(o=>o.id===id)?.price||0),0),0);
+export const lineTotal=(line:OrderLine)=>unitPrice(line)*line.quantity;
+export const selectionLabels=(line:OrderLine)=>Object.entries(line.selections).flatMap(([gid,ids])=>ids.map(id=>modifierGroups[gid]?.options.find(o=>o.id===id)?.name).filter(Boolean) as string[]);
