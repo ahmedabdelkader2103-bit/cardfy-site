@@ -46,9 +46,9 @@ export function OrderPanel({
   const itemCount = lines.reduce((n, l) => n + l.quantity, 0);
 
   return (
-    <aside className="flex min-h-0 min-w-0 flex-col gap-3">
+    <aside className="cfy-pos-order-column flex min-h-0 min-w-0 flex-col gap-3">
       {/* Order type */}
-      <div className="panel shrink-0 p-2">
+      <div className="cfy-pos-order-type panel shrink-0 p-2">
         <p className="px-1 pb-2 pt-1 text-xs font-bold text-muted-foreground">نوع الطلب</p>
         <div className="grid grid-cols-2 gap-2">
           <TypeButton
@@ -68,8 +68,8 @@ export function OrderPanel({
       </div>
 
       {/* Current order */}
-      <div className="panel flex min-h-0 flex-1 flex-col p-3">
-        <div className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 pb-3">
+      <div className="cfy-pos-current-order panel flex min-h-0 flex-1 flex-col p-3">
+        <div className="cfy-pos-order-heading grid shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 pb-3">
           <h2 className="truncate text-base font-extrabold">
             الطلب الحالي
             {itemCount > 0 && <span className="text-muted-foreground"> ({itemCount})</span>}
@@ -85,7 +85,7 @@ export function OrderPanel({
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pos-scroll lg:min-h-[6rem]">
+        <div className="cfy-pos-cart-items min-h-0 flex-1 space-y-2 overflow-y-auto pos-scroll lg:min-h-[6rem]">
           {lines.length === 0 && (
             <div className="grid h-full min-h-28 place-items-center rounded-xl border border-dashed border-border text-sm text-muted-foreground">
               أضف منتجات لبدء الطلب
@@ -156,7 +156,7 @@ export function OrderPanel({
           })}
         </div>
 
-        <div className="shrink-0 pt-3">
+        <div className="cfy-pos-order-notes shrink-0 pt-3">
           <input
             value={notes}
             onChange={(e) => onNotesChange(e.target.value)}
@@ -167,7 +167,7 @@ export function OrderPanel({
       </div>
 
       {/* Summary + actions */}
-      <div className="panel shrink-0 p-3">
+      <div className="cfy-pos-order-summary panel shrink-0 p-3">
         <div className="space-y-1.5 text-sm">
           <Row label="المجموع الفرعي" value={egp(subtotal)} />
           {isDelivery && (
@@ -176,7 +176,7 @@ export function OrderPanel({
               value={egp(deliveryFee)}
             />
           )}
-          <div className="mt-2 flex items-center justify-between gap-2 border-t border-border pt-2">
+          <div className="cfy-pos-order-total mt-2 flex items-center justify-between gap-2 border-t border-border pt-2">
             <span className="text-sm font-extrabold">الإجمالي</span>
             <span className="text-xl font-extrabold text-brand" dir="ltr">
               {egp(total)}
@@ -184,7 +184,7 @@ export function OrderPanel({
           </div>
         </div>
 
-        <div className="mt-3 space-y-2">
+        <div className="cfy-pos-order-actions mt-3 space-y-2">
           <button
             type="button"
             onClick={onComplete}
@@ -194,7 +194,7 @@ export function OrderPanel({
             <Check className="h-5 w-5 shrink-0" />
             إتمام الطلب
           </button>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="cfy-pos-secondary-actions grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={onSaveOrder}
@@ -227,8 +227,8 @@ export function OrderPanel({
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-2">
-      <span className="text-muted-foreground">{label}</span>
+    <div className="cfy-pos-summary-row flex items-center justify-between gap-2">
+      <span className="text-muted-foreground" title={label}>{label}</span>
       <span className="font-bold" dir="ltr">
         {value}
       </span>

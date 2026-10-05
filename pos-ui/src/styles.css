@@ -166,3 +166,47 @@
     border-radius: 999px;
   }
 }
+
+/* Only short desktop viewports use the denser presentation. The original
+ * component geometry remains authoritative at >=760px and below 1024px wide. */
+@media (min-width: 1024px) and (height < 760px) {
+  .cfy-pos-workspace { padding-block: 12px; }
+  .cfy-pos-footer { padding-block: 4px; }
+  .cfy-pos-order-column {
+    gap: 8px;
+    /* No column overflow at normal laptop heights; a safety fallback when the
+     * protected cart/notes and fixed actions cannot fit in an extreme height. */
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+  .cfy-pos-order-type { padding: 4px; }
+  .cfy-pos-order-type > p { padding-block: 0 4px; }
+  .cfy-pos-order-type button { height: 44px; }
+  .cfy-pos-order-type button > svg { width: 18px; height: 18px; }
+  .cfy-pos-current-order { padding: 8px; min-height: 10.625rem; }
+  .cfy-pos-order-heading { padding-bottom: 8px; }
+  .cfy-pos-cart-items { min-height: 4rem; }
+  .cfy-pos-order-notes { padding-top: 8px; }
+  .cfy-pos-order-summary { padding: 8px; }
+  .cfy-pos-order-summary > :first-child > * { margin-block: 0 4px; }
+  .cfy-pos-order-summary > :first-child > :last-child { margin-block: 0; }
+  .cfy-pos-order-total { padding-top: 4px; }
+  .cfy-pos-summary-row > :first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cfy-pos-summary-row > :last-child { flex-shrink: 0; }
+  .cfy-pos-order-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 4px 8px;
+    margin-top: 8px;
+  }
+  .cfy-pos-order-actions > * { margin-block: 0; }
+  .cfy-pos-secondary-actions { display: contents; }
+  .cfy-pos-order-actions > button { height: 48px; }
+  .cfy-pos-secondary-actions > button:first-child { height: 48px; }
+  .cfy-pos-secondary-actions > button:nth-child(2) { grid-column: 1 / -1; height: 44px; }
+}
